@@ -10,7 +10,8 @@ const userSchema = new mongoose.Schema({
 
     propic:{
         type: String,
-        required:true
+        required:true,
+        default: '/public/propic/1.jpg'
     },
 
     email: {

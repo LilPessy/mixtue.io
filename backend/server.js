@@ -1,30 +1,47 @@
-require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
+const http = require('http'); // Modulo nativo di Node
+const { Server } = require('socket.io');
 
 const app = express();
+const PORT = 3000;
 
-// Middleware base
-app.use(cors());
-app.use(express.json()); // Fondamentale per leggere i body in JSON delle richieste POST
+// Middleware fondamentali
+app.use(cors()); // Permette a React (porta 5173) di fare richieste a Express (porta 3000)
+app.use(express.json()); // Permette di leggere i dati in formato JSON dal frontend
 
-// Route di test
-app.get('/', (req, res) => {
-    res.send('Backend di Mixtue.io operativo!');
+// Creazione del server HTTP unificato (serve per far convivere Express e Socket.io)
+const server = http.createServer(app);
+
+// Inizializzazione di Socket.io
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173", // L'indirizzo del tuo frontend Vite
+        methods: ["GET", "POST"]
+    }
 });
 
-// Connessione a MongoDB e avvio del server
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-      console.log('🔥 Connesso con successo a MongoDB Atlas!');
-      
-      // Avviamo Express solo se il database è pronto
-      const PORT = process.env.PORT || 3000;
-      app.listen(PORT, () => {
-          console.log(`🚀 Server in ascolto sulla porta ${PORT}`);
-      });
-  })
-  .catch((error) => {
-      console.error('❌ Errore di connessione al database:', error.message);
-  });
+// --- ROTTE EXPRESS (API REST) ---
+
+app.get('/api/test', (req, res) => {
+    res.json({ message: "Il backend di Mixtue.io è vivo e vegeto!" });
+});
+
+// Qui il tuo collega potrà aggiungere le altre rotte (es. /api/sessions, /api/users)
+
+
+// --- GESTIONE SOCKET.IO (REAL-TIME) ---
+
+io.on('connection', (socket) => {
+    console.log(`Un utente si è connesso: ${socket.id}`);
+
+    // Quando un utente chiude la scheda
+    socket.on('disconnect', () => {
+        console.log(`Utente disconnesso: ${socket.id}`);
+    });
+});
+
+// Avvio del server
+server.listen(PORT, () => {
+    console.log(`🚀 Server in ascolto sulla porta ${PORT}`);
+});

@@ -1,9 +1,11 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-
+const path = require('path');
+console.log("Cerco il modello in:", path.resolve('./models/User.js'));
 // Percorsi corretti puntati alla cartella model e con la lettera maiuscola!
-const User = require('./model/User'); 
-const Session = require('./model/Session');
+
+const User = require('./models/User'); 
+const Session = require('./models/Session');
 
 const seedDB = async () => {
     try {

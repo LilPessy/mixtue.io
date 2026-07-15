@@ -7,6 +7,12 @@ const userSchema = new mongoose.Schema({
         unique: true,
         trim:true
     },
+
+    propic:{
+        type: String,
+        required:true
+    },
+
     email: {
         type: String,
         required: true,

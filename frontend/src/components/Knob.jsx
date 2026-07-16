@@ -6,7 +6,8 @@ function Knob({freq, onChange}){
 
     const handleChange =  (e)=>{
         setValue(e.target.value)
-        onChange(e.target, value)
+        console.log(e.target.id + value)
+        onChange(e.target.id, value)
     }
 
     const percentage = (value - (-40)) / (12 - (-40));
@@ -20,10 +21,11 @@ function Knob({freq, onChange}){
             </div>
 
             <input 
+                id={freq === "HF" ? 0 : freq === "MF" ? 1 : 2}
                 type="range" 
                 min={-40} 
                 max={12} 
-                step="0.1" 
+                step="1" 
                 value={value} 
                 onChange={handleChange}
                 className="hiddenInput"

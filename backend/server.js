@@ -2,12 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http'); // Modulo nativo di Node
 const { Server } = require('socket.io');
-const bcrypt = require('bcryptjs');
-const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = 3000;
 
+const bcrypt = require('bcryptjs');
+const cookieParser = require('cookie-parser');
+
+const User = require('./models/User'); 
+const Session = require('./models/Session');
 const authRoutes = require('./routes/auth'); //importiamo il file delle rotte 
 
 // Middleware fondamentali
@@ -33,6 +36,7 @@ app.get('/api/test', (req, res) => {
     res.json({ message: "Il backend di Mixtue.io è vivo e vegeto!" });
 });
 
+
 // Qui il tuo collega potrà aggiungere le altre rotte (es. /api/sessions, /api/users)
 
 
@@ -50,4 +54,45 @@ io.on('connection', (socket) => {
 // Avvio del server
 server.listen(PORT, () => {
     console.log(`🚀 Server in ascolto sulla porta ${PORT}`);
+});
+
+
+//Gestione della home funzioni js per queri al DB
+
+const ottieniUtente = (nomeUtente) => {
+    return User.findOne({ username: nomeUtente }); 
+};
+
+const ottieniImmagine = (utente) => {
+    if (utente && utente.profilePicture) {
+        return utente.propic;
+    }
+    return '/file/propic/default.jpg';
+};
+
+app.get('/api/user/test', (req, res) => {
+    const usernameCercato = 'matteormn'; // Il tuo account di test
+
+    // Chiamiamo la prima funzione...
+    ottieniUtente(usernameCercato)
+        .then(utenteTrovato => {
+            // Controllo di sicurezza: e se l'utente non esiste?
+            if (!utenteTrovato) {
+                return res.status(404).json({ error: 'Utente non trovato' });
+            }
+
+            // Chiamiamo la seconda funzione passandogli l'utente appena trovato!
+            const immagineProfilo = ottieniImmagineProfilo(utenteTrovato);
+
+            // Assembliamo la risposta e la inviamo a React in formato JSON
+            res.json({
+                username: utenteTrovato.username,
+                propic: immagineProfilo
+            });
+        })
+        .catch(error => {
+            // Catturiamo qualsiasi errore (es. database disconnesso) per evitare il crash del server
+            console.error('Errore nel recupero utente:', error);
+            res.status(500).json({ error: 'Errore interno del server' });
+        });
 });

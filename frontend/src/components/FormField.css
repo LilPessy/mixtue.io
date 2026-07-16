@@ -6,6 +6,7 @@
   width: 100%;
 }
 .input-label {
+  color: #121059; /* Un blu notte più scuro e profondo, come da immagine */
   font-size: 1.4rem;
   font-weight: 800; /* Testo molto marcato */
   margin-bottom: 8px;

@@ -12,6 +12,7 @@ const PORT = 3000;
 // Middleware fondamentali
 app.use(cors()); // Permette a React (porta 5173) di fare richieste a Express (porta 3000)
 app.use(express.json()); // Permette di leggere i dati in formato JSON dal frontend
+app.use(cookieParser()); //Permette di leggere e tradurre i cookie che il broser invia al server
 
 // Creazione del server HTTP unificato (serve per far convivere Express e Socket.io)
 const server = http.createServer(app);

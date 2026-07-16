@@ -1,0 +1,68 @@
+.faderContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Nel tuo design la scritta 'Volume' è allineata a sinistra */
+    width: 100%;
+    max-width: 300px;
+    margin: 20px auto;
+}
+
+.label {
+    color: #1a237e; /* Il blu scuro del tuo testo */
+    font-weight: 700;
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+}
+
+/* 1. Reset del fader di base */
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    background: transparent; /* Nasconde lo sfondo predefinito */
+    outline: none;
+}
+
+/* Barra orizzontale*/
+
+/* Chrome, Safari, Edge */
+.slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 16px;
+    background: #8b9be2; 
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* Firefox */
+.slider::-moz-range-track {
+    width: 100%;
+    height: 16px;
+    background: #8b9be2;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* Cursore volume */
+
+/* Chrome, Safari, Edge */
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 36px; 
+    width: 14px;  
+    background: #1a237e; 
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: -10px; 
+}
+
+/* Firefox */
+.slider::-moz-range-thumb {
+    height: 36px;
+    width: 14px;
+    background: #1a237e;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none; /* Firefox aggiunge un bordino grigio di default */
+}

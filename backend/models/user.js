@@ -35,4 +35,5 @@ const userSchema = new mongoose.Schema({
     }
 },);
 
-module.exports = mongoose.model('User', userSchema);
+// Se mongoose.models.User esiste già, esporta quello. Altrimenti, crea il nuovo modello.
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);

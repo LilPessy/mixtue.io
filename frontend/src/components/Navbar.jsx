@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Navbar = () => {
+function Navbar(){
     // 1. LO STATO: La "memoria" del componente. 
     // All'inizio parte con dei valori di default, in attesa che il server risponda.
     const [user, setUser] = useState({ 
@@ -44,3 +44,4 @@ const Navbar = () => {
         </nav>
     )
 }
+export default Navbar;

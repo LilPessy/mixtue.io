@@ -71,7 +71,7 @@ const ottieniImmagine = (utente) => {
 };
 
 app.get('/api/user/test', (req, res) => {
-    const usernameCercato = 'matteormn'; // Il tuo account di test
+    const usernameCercato = 'Magnifico Rettore'; // Il tuo account di test
 
     // Chiamiamo la prima funzione...
     ottieniUtente(usernameCercato)
@@ -82,7 +82,7 @@ app.get('/api/user/test', (req, res) => {
             }
 
             // Chiamiamo la seconda funzione passandogli l'utente appena trovato!
-            const immagineProfilo = ottieniImmagineProfilo(utenteTrovato);
+            const immagineProfilo = ottieniImmagine(utenteTrovato);
 
             // Assembliamo la risposta e la inviamo a React in formato JSON
             res.json({

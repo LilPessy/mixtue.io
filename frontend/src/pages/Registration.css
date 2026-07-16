@@ -64,10 +64,10 @@
 }
 
 .logo-circle {
-  width: 250px;
-  height: 250px;
+  width: 300px;
+  height: 220px;
   background-color: #003495;
-  border-radius: 50%;
+  border-radius: 120px; /* Arrotondamento massimo per effetto "pillola" */
   display: flex;
   flex-direction: column;
   align-items: center;

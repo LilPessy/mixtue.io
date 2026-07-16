@@ -7,7 +7,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        
+        <Route path="/registration" element={<Registration />} />
         <Route path="/mixer/:roomId" element={<MixerRoom />} />
         
         <Route path="*" element={<h1>404 Not Found</h1>} />

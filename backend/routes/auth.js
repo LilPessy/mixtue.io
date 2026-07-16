@@ -76,3 +76,24 @@ app.post('/login', async (req, res) => {
   res.json({ accessToken: accessToken });
   //invia l'Access Token al frontend in formato leggibile
 });
+
+app.get('/refresh', async (req, res) => {
+  const cookies = req.cookies;
+  //legge i cookies invisibili che il browser ha inviato automaticamente
+  if (!cookies?.jwt) return res.status(401).json({ message: "Non autorizzato" });
+  const refreshToken = cookies.jwt;
+
+  const user = await User.findOne({ refreshToken: refreshToken });
+  if (!user) return res.status(403).json({ message: "Accesso negato" });
+
+  jwt.verify(refreshToken, process.env.REFRESH_SECRET, (err, decoded) => {
+  //controlla se il token ricevuto dai cookie sia alterato o scaduto
+    if (err || user._id.toString() !== decoded.id) 
+      return res.status(403).json({ message: "Token non valido" 
+    });
+
+    const newAccessToken = jwt.sign({ id: user._id }, process.env.ACCESS_SECRET, { expiresIn: '15m' });
+    //creiamo un nuovo Access Token nuovo fresco di 15 min e lo restituiamo al client
+    res.json({ accessToken: newAccessToken });
+  });
+});

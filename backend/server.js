@@ -9,6 +9,9 @@ const PORT = 3000;
 const bcrypt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
 
+const mongoose = require('mongoose');
+require('dotenv').config();
+
 const User = require('./models/User'); 
 const Session = require('./models/Session');
 const authRoutes = require('./routes/auth'); //importiamo il file delle rotte 
@@ -18,7 +21,15 @@ app.use(cors()); // Permette a React (porta 5173) di fare richieste a Express (p
 app.use(express.json()); // Permette di leggere i dati in formato JSON dal frontend
 app.use(cookieParser()); //Permette di leggere e tradurre i cookie che il broser invia al server
 app.use('/api/auth', authRoutes);
-
+//Connessione Db
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+        console.log('✅ Connesso a MongoDB Atlas!');
+    })
+    .catch((err) => {
+        console.error('❌ Errore di connessione a MongoDB:', err);
+    });
+    app.use('/api/auth', authRoutes);
 // Creazione del server HTTP unificato (serve per far convivere Express e Socket.io)
 const server = http.createServer(app);
 
@@ -64,7 +75,7 @@ const ottieniUtente = (nomeUtente) => {
 };
 
 const ottieniImmagine = (utente) => {
-    if (utente && utente.profilePicture) {
+    if (utente && utente.propic) {
         return utente.propic;
     }
     return '/file/propic/default.jpg';

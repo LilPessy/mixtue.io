@@ -27,3 +27,7 @@
   color: #A2A2A2;
   font-weight: 400;
 }
+.custom-input:focus {
+  border-color: #1a1e5d; /* Il bordo diventa blu scuro */
+  box-shadow: 0 4px 12px rgba(26, 30, 93, 0.1); /* L'ombra diventa un po' più visibile */
+}

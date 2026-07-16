@@ -15,6 +15,14 @@ const trackSchema = new mongoose.Schema({
 });
 
 const sessionSchema = new mongoose.Schema({
+
+    roomeCode: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true,
+        default: () => Math.floor(10000 + Math.random() * 90000).toString()
+    },
     name: {
         type: String,
         required: true,
@@ -36,4 +44,4 @@ const sessionSchema = new mongoose.Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model('Session', sessionSchema);
+module.exports = mongoose.models.Session || mongoose.model('Session', sessionSchema);

@@ -1,6 +1,16 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
+    nome: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    cognome: {
+        type: String,
+        required: true,
+        trim: true
+    },
     username: {
         type: String,
         required: true,
@@ -35,4 +45,5 @@ const userSchema = new mongoose.Schema({
     }
 },);
 
-module.exports = mongoose.model('User', userSchema);
+// Se mongoose.models.User esiste già, esporta quello. Altrimenti, crea il nuovo modello.
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);

@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+.registration-container {
+  font-family: 'Nunito', ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #ffffff;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* --- Forme di Sfondo --- */
+.bg-shape {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.shape-top-left {
+  width: 350px;
+  height: 350px;
+  background-color: #8da4ea; /* Azzurro/violaceo chiaro */
+  top: -120px;
+  left: -150px;
+}
+
+.shape-top-right {
+  width: 350px;
+  height: 350px;
+  border: 50px solid #1a1563; /* Bordo proporzionato alla nuova dimensione */
+  background-color: transparent; /* Centro vuoto */
+  top: -10px;
+  right: -150px;
+  box-sizing: border-box;
+}
+
+.shape-mid-left {
+  width: 300px;
+  height: 300px;
+  border: 45px solid #7ef2f9; /* Anello azzurro ciano */
+  background-color: transparent;
+  top: 250px;
+  left: -150px;
+  box-sizing: border-box;
+}
+
+/* Assicura che i contenuti principali stiano "sopra" lo sfondo */
+.header-section, 
+.main-title, 
+.form-container, 
+.button-container, 
+.login-link-container {
+  position: relative;
+  z-index: 1;
+}
+
+.header-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.logo-circle {
+  width: 300px;
+  height: 220px;
+  background-color: #003495;
+  border-radius: 120px; /* Arrotondamento massimo per effetto "pillola" */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 52, 149, 0.1);
+}
+
+.logo-square {
+  width: 110px;
+  height: 110px;
+  background-color: #ffffff;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.logo-image {
+  width: 80px;
+  height: auto;
+  object-fit: contain;
+}
+
+.logo-text {
+  color: #ffffff;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.main-title {
+  color: #121059;
+  font-family: 'Nunito', ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 2.2rem;
+  letter-spacing: -0.5px;
+}
+
+.form-container {
+  width: 100%;
+  max-width: 350px;
+}
+
+.button-container {
+  width: 100%;
+  max-width: 350px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.login-link-container {
+  text-align: center;
+}
+
+.login-link {
+  color: #a2a2a2;
+  text-decoration: underline;
+  font-size: 1rem;
+}

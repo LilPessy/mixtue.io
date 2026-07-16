@@ -19,11 +19,11 @@ const seedDB = async () => {
 
         // 2. Creazione array di 5 Utenti
         const usersData = [
-            { username: 'Magnifico Rettore', email: 'rettore@poliba.it', password: 'password123', profilePicture: '/public/propic/1.jpg' },
-            { username: 'matteormn', email: 'matteo@mixtue.io', password: 'password123', profilePicture: '/public/propic/2.jpg' },
-            { username: 'daniele', email: 'daniele@mixtue.io', password: 'password123', profilePicture: '/public/propic/3.jpg' },
-            { username: 'alice_dj', email: 'alice@mixtue.io', password: 'password123', profilePicture: '/public/propic/4.jpg' },
-            { username: 'arianna', email: 'arianna@mixtue.io', password: 'password123', profilePicture: '/public/propic/5.jpg' }
+            { username: 'Magnifico Rettore', email: 'rettore@poliba.it', password: 'password123', propic: '/public/propic/1.jpg' },
+            { username: 'matteormn', email: 'matteo@mixtue.io', password: 'password123', propic: '/public/propic/2.jpg' },
+            { username: 'daniele', email: 'daniele@mixtue.io', password: 'password123', propic: '/public/propic/3.jpg' },
+            { username: 'alice_dj', email: 'alice@mixtue.io', password: 'password123', propic: '/public/propic/4.jpg' },
+            { username: 'arianna', email: 'arianna@mixtue.io', password: 'password123', propic: '/public/propic/5.jpg' }
         ];
 
         // Inserimento massivo nel DB

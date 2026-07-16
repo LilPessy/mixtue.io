@@ -1,13 +1,16 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import MixerRoom from './pages/MixerRoom';
+import Registration from './pages/Registration';
+import Login from './pages/Login';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        
+        <Route path="/login" element={<Login />} />
+        <Route path="/registration" element={<Registration />} />
         <Route path="/mixer/:roomId" element={<MixerRoom />} />
         
         <Route path="*" element={<h1>404 Not Found</h1>} />

@@ -97,3 +97,5 @@ app.get('/refresh', async (req, res) => {
     res.json({ accessToken: newAccessToken });
   });
 });
+
+module.exports = router;

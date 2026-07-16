@@ -1,0 +1,56 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.header-curvo {
+    width: 85%;
+    min-height: 150px;
+    background-color: #7986cb;
+    padding: 30px;
+    clip-path: ellipse(100% 95% at 0% 0%);
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+section{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+}
+
+.header{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 95vw;
+    z-index: 100;
+}
+
+.title{
+    width: 80%;
+    padding-top: 10px;
+}
+
+.title h1{
+    color: #201971;
+}
+
+.title p{
+    color: white;
+    font-size: 20px;
+}
+
+.btnWrap{
+    width: 20%;
+}
+
+.knobsContainer{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-top: 80px;
+    width: 70vw;
+}

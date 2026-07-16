@@ -3,16 +3,18 @@ const cors = require('cors');
 const http = require('http'); // Modulo nativo di Node
 const { Server } = require('socket.io');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = 3000;
 
+const authRoutes = require('./routes/auth'); //importiamo il file delle rotte 
+
 // Middleware fondamentali
 app.use(cors()); // Permette a React (porta 5173) di fare richieste a Express (porta 3000)
 app.use(express.json()); // Permette di leggere i dati in formato JSON dal frontend
 app.use(cookieParser()); //Permette di leggere e tradurre i cookie che il broser invia al server
+app.use('/api/auth', authRoutes);
 
 // Creazione del server HTTP unificato (serve per far convivere Express e Socket.io)
 const server = http.createServer(app);

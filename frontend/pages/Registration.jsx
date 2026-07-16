@@ -18,4 +18,16 @@ const Registration = () => {
     if (password !== confermaPassword) {
       alert("Le password non coincidono!");
       return;
-    }}
+    }
+
+const userData = {
+      nome,
+      cognome,
+      username,
+      email,
+      password
+    };
+
+    console.log("Dati pronti per il salvataggio:", userData);
+    
+  };

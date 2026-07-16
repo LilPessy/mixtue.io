@@ -8,6 +8,51 @@
   padding: 20px;
   background-color: #ffffff;
   min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* --- Forme di Sfondo --- */
+.bg-shape {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.shape-top-left {
+  width: 350px;
+  height: 350px;
+  background-color: #8da4ea; /* Azzurro/violaceo chiaro */
+  top: -120px;
+  left: -150px;
+}
+
+.shape-top-right {
+  width: 450px;
+  height: 450px;
+  background-color: #1a1563; /* Blu notte / viola scuro */
+  top: -150px;
+  right: -200px;
+}
+
+.shape-mid-left {
+  width: 300px;
+  height: 300px;
+  border: 45px solid #7ef2f9; /* Anello azzurro ciano */
+  background-color: transparent;
+  top: 250px;
+  left: -150px;
+  box-sizing: border-box;
+}
+
+/* Assicura che i contenuti principali stiano "sopra" lo sfondo */
+.header-section, 
+.main-title, 
+.form-container, 
+.button-container, 
+.login-link-container {
+  position: relative;
+  z-index: 1;
 }
 
 .header-section {
@@ -40,6 +85,12 @@
   justify-content: center;
   margin-bottom: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.logo-image {
+  width: 80px;
+  height: auto;
+  object-fit: contain;
 }
 
 .logo-text {

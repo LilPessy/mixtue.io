@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import FormField from '../components/FormField';
 import Button from '../components/Button';
 import './Registration.css';
+import logo from '../assets/logo.png';
 
 const Registration = () => {
   // 1. Gli stati vanno dentro il componente
@@ -32,11 +33,16 @@ const Registration = () => {
   return (
     <div className="registration-container">
       
+      {/* Forme geometriche di sfondo */}
+      <div className="bg-shape shape-top-left"></div>
+      <div className="bg-shape shape-top-right"></div>
+      <div className="bg-shape shape-mid-left"></div>
+      
       {/* Sezione Intestazione con Logo (ricreata in CSS o con un'immagine) */}
       <div className="header-section">
         <div className="logo-circle">
           <div className="logo-square">
-            {/* Qui puoi inserire l'icona in blu */}
+            <img src={logo} alt="MixTue Logo" className="logo-image" />
           </div>
           <h2 className="logo-text">MixTue.io</h2>
         </div>

@@ -12,3 +12,10 @@ const Registration = () => {
   const [password, setPassword] = useState('');
   const [confermaPassword, setConfermaPassword] = useState('');
 }
+// La funzione che scatta cliccando il componente Button
+  const handleRegister = () => {
+    // Controllo base (es. le password coincidono?)
+    if (password !== confermaPassword) {
+      alert("Le password non coincidono!");
+      return;
+    }}

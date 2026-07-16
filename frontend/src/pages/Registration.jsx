@@ -55,7 +55,7 @@ const Registration = () => {
 
         <FormField
           label="Cognome"
-          placeholder="Inserisci il tuo nome" /* Mantenuto come da immagine, ma potresti volerlo cambiare in "tuo cognome" */
+          placeholder="Inserisci il tuo cognome" 
           value={cognome}
           onChange={(e) => setCognome(e.target.value)}
         />

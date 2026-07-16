@@ -13,6 +13,9 @@
   letter-spacing: -0.3px; /* Avvicina leggermente le lettere */
 }
 .custom-input {
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
   padding: 14px 20px;
   font-size: 1.1rem;
   color: #333333;

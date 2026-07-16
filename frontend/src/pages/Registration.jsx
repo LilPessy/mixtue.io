@@ -35,7 +35,9 @@ const Registration = () => {
       {/* Sezione Intestazione con Logo (ricreata in CSS o con un'immagine) */}
       <div className="header-section">
         <div className="logo-circle">
-          {/* Qui puoi inserire il tag <img src="..."/> del logo MixTue */}
+          <div className="logo-square">
+            {/* Qui puoi inserire l'icona in blu */}
+          </div>
           <h2 className="logo-text">MixTue.io</h2>
         </div>
       </div>

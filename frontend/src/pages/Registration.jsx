@@ -3,6 +3,7 @@ import FormField from '../components/FormField';
 import Button from '../components/Button';
 import './Registration.css';
 import logo from '../assets/logo.png';
+import { Link } from 'react-router-dom';
 
 const Registration = () => {
   // 1. Gli stati vanno dentro il componente
@@ -108,7 +109,7 @@ const Registration = () => {
 
       {/* Link finale */}
       <div className="login-link-container">
-        <a href="/login" className="login-link">Ho già un account</a>
+        <Link to="/login" className="login-link">Ho già un account</Link>
       </div>
 
     </div>

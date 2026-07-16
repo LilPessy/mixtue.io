@@ -29,7 +29,10 @@ const userSchema = new mongoose.Schema({
     activeSessions: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Session'
-    }]
+    }],
+    refreshToken: { type: String 
+
+    }
 },);
 
 module.exports = mongoose.model('User', userSchema);

@@ -40,7 +40,11 @@ section{
 
 .title p{
     color: white;
-    font-size: 20px;
+    font-size: 25px;
+}
+
+.title p span{
+    text-decoration: underline;
 }
 
 .btnWrap{
@@ -53,4 +57,50 @@ section{
     justify-content: space-between;
     padding-top: 80px;
     width: 70vw;
+}
+
+.buttonContainer{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 70vw;
+    height: 40px;
+}
+
+.buttonContainer .buttonWrap{
+    width: 30%;
+}
+
+.trackButtonWrap{
+    width: 70vw;
+    height: 50px;
+}
+
+.carouselContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 70vw;
+    padding: 20px 0 30px 0;
+}
+
+.carouselContainer h3{
+    font-size: 25px;
+    padding-bottom: 5px;
+}
+
+.carouselContainer .buttonContainer{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.carouselContainer img{
+    width: 40px;
+}
+
+.prevTrack{
+    transform: scaleX(-1);
 }

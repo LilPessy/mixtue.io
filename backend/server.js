@@ -2,6 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http'); // Modulo nativo di Node
 const { Server } = require('socket.io');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = 3000;

@@ -49,3 +49,30 @@ app.post('/register', async (req, res) => {
     res.status(500).json({ message: "Errore del server" });
   }
 });
+
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email: email });
+  if (!user) return res.status(400).json({ message: "Credenziali errate" });
+
+  const validPassword = await bcrypt.compare(password, user.password);
+  if (!validPassword) return res.status(400).json({ message: "Credenziali errate" });
+
+  const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_SECRET, { expiresIn: '15m' });
+  const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_SECRET, { expiresIn: '7d' });
+
+  user.refreshToken = refreshToken;
+  await user.save();
+
+  res.cookie('jwt', refreshToken, { 
+  //stiamo inviando il refresh token a React come un "Cookie di sicurezza"
+    httpOnly: true,
+    //impedisce a JavaScript sul browser di leggere i cookie 
+    secure: process.env.NODE_ENV === 'production', 
+    maxAge: 7 * 24 * 60 * 60 * 1000 
+  });
+
+  res.json({ accessToken: accessToken });
+  //invia l'Access Token al frontend in formato leggibile
+});

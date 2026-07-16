@@ -1,0 +1,7 @@
+.bar {
+  width: 50px;
+  background-color: #7ce0ff; /* Il colore azzurro della tua immagine */
+  border-radius: 20px;
+  /* Anima il cambio di altezza in modo fluido */
+  transition: height 0.05s ease-out; 
+}

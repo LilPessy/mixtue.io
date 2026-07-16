@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import MixerRoom from './pages/MixerRoom';
+import Registration from './pages/Registration';
 
 function App() {
   return (

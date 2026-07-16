@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import FormField from './FormField';
-import Button from './Button';
+import FormField from '../components/FormField';
+import Button from '../components/Button';
 import './Registration.css';
 
 const Registration = () => {
@@ -30,10 +30,6 @@ const Registration = () => {
     console.log("Dati pronti per il salvataggio:", userData);
   };
   return (
-    <div className="registration-container">
-      <h1>Registrazione</h1>
-      
-     return (
     <div className="registration-container">
       
       {/* Sezione Intestazione con Logo (ricreata in CSS o con un'immagine) */}
@@ -107,13 +103,6 @@ const Registration = () => {
         <a href="/login" className="login-link">Ho già un account</a>
       </div>
 
-    </div>
-  );
-      
-      {/* Qui leghi la funzione al tuo Button */}
-      <Button onClick={handleRegister}>
-        Registrati
-      </Button>
     </div>
   );
 }; // <-- Chiusura corretta del componente Registration

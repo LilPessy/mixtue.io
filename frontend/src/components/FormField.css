@@ -12,3 +12,14 @@
   margin-bottom: 8px;
   letter-spacing: -0.3px; /* Avvicina leggermente le lettere */
 }
+.custom-input {
+  padding: 14px 20px;
+  font-size: 1.1rem;
+  color: #333333;
+  background-color: #ffffff;
+  border: 1.5px solid #eaeaea; /* Bordo grigio molto chiaro */
+  border-radius: 16px; /* Crea gli angoli marcatamente arrotondati */
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); /* Ombreggiatura leggerissima */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}

@@ -1,0 +1,38 @@
+.knobContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 60px; /* Adatta alla tua immagine */
+}
+
+/* La grafica della manopola blu scuro */
+.knobVisual {
+    width: 70px;
+    height: 70px;
+    background-color: #0d2b85; /* Il blu della tua immagine */
+    border-radius: 50%;
+    position: relative;
+    pointer-events: none; /* Ignora il mouse, lascia i click all'input sotto */
+}
+
+/* La lineetta azzurra */
+.knobIndicator {
+    width: 6px;
+    height: 50%;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 2px;
+}
+
+/* Nascondiamo l'input ma lo lasciamo cliccabile/trascinabile sopra la manopola */
+.hiddenInput {
+    position: absolute;
+    top: 20px;
+    width: 60px;
+    height: 60px;
+    opacity: 0; 
+    cursor: pointer;
+}

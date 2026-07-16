@@ -1,3 +1,13 @@
 .button{
-    background: blue;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #003495;
+    width: 100%;
+    border-radius: 10px;
+    padding: 5px 10px;
+}
+
+.button img{
+    width: 30%;
 }

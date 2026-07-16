@@ -9,13 +9,30 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    const userData = {
-      username,
-      password
-    };
-    console.log("Dati pronti per il login:", userData);
-    // Qui andrà la logica per chiamare il backend e fare il login
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Salviamo il token JWT per mantenere la sessione
+        localStorage.setItem('accessToken', data.accessToken);
+        alert("Accesso effettuato con successo!");
+        // Qui si potrebbe usare useNavigate per portare l'utente nella Home
+      } else {
+        alert(data.message || "Credenziali errate");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Impossibile connettersi al server. Assicurati che il backend sia acceso.");
+    }
   };
 
   return (

@@ -15,21 +15,37 @@ const Registration = () => {
   const [confermaPassword, setConfermaPassword] = useState('');
 
   // 2. Anche la funzione va DENTRO il componente, prima del return
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (password !== confermaPassword) {
       alert("Le password non coincidono!");
       return;
     }
 
-    const userData = {
-      nome,
-      cognome,
-      username,
-      email,
-      password
-    };
+    const formData = new FormData();
+    formData.append('nome', nome);
+    formData.append('cognome', cognome);
+    formData.append('username', username);
+    formData.append('email', email);
+    formData.append('password', password);
 
-    console.log("Dati pronti per il salvataggio:", userData);
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/register', {
+        method: 'POST',
+        body: formData, // Multer nel backend intercetta multipart/form-data
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Registrazione completata con successo! Ora puoi effettuare il login.");
+        // Volendo qui potremmo svuotare i campi o reindirizzare l'utente
+      } else {
+        alert(data.message || "Errore durante la registrazione");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Impossibile connettersi al server. Assicurati che il backend sia acceso.");
+    }
   };
   return (
     <div className="registration-container">

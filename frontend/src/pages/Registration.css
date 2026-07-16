@@ -28,11 +28,13 @@
 }
 
 .shape-top-right {
-  width: 450px;
-  height: 450px;
-  background-color: #1a1563; /* Blu notte / viola scuro */
-  top: -150px;
-  right: -200px;
+  width: 350px;
+  height: 350px;
+  border: 50px solid #1a1563; /* Bordo proporzionato alla nuova dimensione */
+  background-color: transparent; /* Centro vuoto */
+  top: -10px;
+  right: -150px;
+  box-sizing: border-box;
 }
 
 .shape-mid-left {

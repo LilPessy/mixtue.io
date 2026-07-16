@@ -10,7 +10,7 @@ const upload = require('../middlewares/upload');
 // ✅ Aggiunto upload.single('propic') come middleware per intercettare l'immagine
 router.post('/register', upload.single('propic'), async (req, res) => {
   try {
-    const { email, password, username } = req.body;
+    const { email, password, username, nome, cognome } = req.body;
     
     const existingUser = await User.findOne({ 
       $or: [ 
@@ -41,6 +41,8 @@ router.post('/register', upload.single('propic'), async (req, res) => {
 
     // ✅ Aggiunto il campo propic alla creazione dell'utente
     const newUser = new User({ 
+      nome: nome,
+      cognome: cognome,
       username: username,
       email: email, 
       password: hashedPassword,
@@ -59,9 +61,9 @@ router.post('/register', upload.single('propic'), async (req, res) => {
 // ✅ Cambiato app.post in router.post
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ username: username });
     if (!user) return res.status(400).json({ message: "Credenziali errate" });
 
     const validPassword = await bcrypt.compare(password, user.password);

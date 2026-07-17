@@ -13,7 +13,7 @@ import pauseIcon from '../assets/pause.png'
 
 function MixerRoom(){
 
-    const tracks = [
+    const [tracks, setTracks] = useState( [
         {
             id:0,
             url: 'public/tracks/bass.mp3',
@@ -24,7 +24,7 @@ function MixerRoom(){
             url: 'public/tracks/dueEstranei.mp3',
             name: "dueEstranei.mp3"
         },
-    ];
+    ]);
 
     const prevTrack = ()=>{
         if(trackCounter>0){
@@ -85,7 +85,7 @@ function MixerRoom(){
         return () => {
             Object.values(playersRef.current).forEach(p => p.dispose());
         }
-    }, []); //solo all'avvio
+    }, [tracks]); //solo all'avvio
 
     useEffect(() => {
         //traccia attiva nel carosello
@@ -150,7 +150,7 @@ function MixerRoom(){
         const tempMute = [...isMute];
         tempMute[currentTrackId] = !tempMute[currentTrackId];
         setIsMute(tempMute);
-        
+
         const currentVol = volumesRef.current[currentTrackId];
         if (currentVol) {
             currentVol.mute = tempMute[currentTrackId];
@@ -167,6 +167,48 @@ function MixerRoom(){
         navigator.clipboard.writeText(code);
         alert("Codice stanza copiato!")
     }
+
+    const fileInputRef = useRef(null);
+    const triggerFileInput = () => {
+        fileInputRef.current.click();
+    };
+    const handleTrackUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append("audioFile", file);
+
+        try {
+            const response = await fetch("http://localhost:3000/api/upload/track", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Creiamo il nuovo oggetto traccia usando il nome file restituito da Multer
+                const newTrack = {
+                    id: tracks.length,
+                    url: 'public/tracks/'+data.fileName,
+                    name: data.fileName 
+                };
+                
+                // Aggiorniamo lo stato delle tracce (il carosello si allungherà in automatico)
+                setTracks([...tracks, newTrack])
+                
+                // Un feedback per capire che è andato tutto a buon fine
+                console.log("Traccia caricata con successo:", data.fileName);
+                
+                // Opzionale: resettiamo l'input nel caso volessi ricaricare lo stesso file
+                event.target.value = null; 
+            } else {
+                console.error("Errore dal server durante il caricamento");
+            }
+        } catch (error) {
+            console.error("Errore di comunicazione col backend:", error);
+        }
+    };
 
     return(
         <section>
@@ -215,7 +257,14 @@ function MixerRoom(){
                 </div>
             </div>
             <div className='trackButtonWrap'>
-                <Button text="Aggiungi Traccia"/>
+                <input 
+                    type="file" 
+                    accept="audio/mp3, audio/wav, audio/mpeg" 
+                    ref={fileInputRef} 
+                    style={{ display: 'none' }} 
+                    onChange={handleTrackUpload}
+                />
+                <Button text="Aggiungi Traccia" callback={triggerFileInput}/>
             </div>
             
 

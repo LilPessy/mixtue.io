@@ -42,67 +42,92 @@ function MixerRoom(){
     const [knobsValue, setKnobsValue] = useState([0,0,0])
     const [volume, setVolume] = useState(0)
 
-   // Contenitori per TUTTE le tracce, indicizzati per ID
     const playersRef = useRef({});
     const offsetsRef = useRef({});
     const startTimesRef = useRef({});
 
-    // Stato per tracciare chi sta suonando 
     const [playingStates, setPlayingStates] = useState({});
     const [isReady, setIsReady] = useState(false);
-
-    // 1. Calcoliamo l'ID della traccia attualmente a schermo
     const currentTrackId = tracks[trackCounter].id;
-    
-    // 2. Peschiamo il player specifico per quella traccia dal nostro raccoglitore
     const currentAudioSource = playersRef.current[currentTrackId];
 
+    const eqsRef = useRef({});
+    const volumesRef = useRef({});
     
 
     useEffect(() => {
     // Cicliamo l'array e creiamo un player per ogni traccia
         tracks.forEach((track) => {
             const player = new Tone.Player({
-                // Assicurati che l'URL punti a Express come dicevamo prima!
                 url: `http://localhost:5173/${track.url}`, 
                 onload: () => {
                     setIsReady(true);
                 }
-            }).toDestination(); 
+            })
+            const eq = new Tone.EQ3(0, 0, 0); 
+            const vol = new Tone.Volume(0);   
 
-            // Salviamo ogni player e inizializziamo i suoi contatori usando l'ID (0, 1, 2...)
+            // Creiamo la catena: Player -> EQ -> Volume -> Casse
+            player.chain(eq, vol, Tone.Destination);
+
+            // Salviamo tutto nei nostri raccoglitori
             playersRef.current[track.id] = player;
+            eqsRef.current[track.id] = eq;
+            volumesRef.current[track.id] = vol;
+            
             offsetsRef.current[track.id] = 0;
             startTimesRef.current[track.id] = 0;
+
         });
 
         return () => {
-            // Pulizia: distruggiamo tutti i player in un colpo solo
             Object.values(playersRef.current).forEach(p => p.dispose());
         }
-    }, []); // Array vuoto: lo fa una volta sola all'avvio
+    }, []); //solo all'avvio
+
+    useEffect(() => {
+        //traccia attiva nel carosello
+        const currentTrackId = tracks[trackCounter].id;
+        
+        const currentEq = eqsRef.current[currentTrackId];
+        const currentVol = volumesRef.current[currentTrackId];
+
+        
+        if (currentEq) {
+            currentEq.high.value = knobsValue[0]; 
+            currentEq.mid.value  = knobsValue[1];  
+            currentEq.low.value  = knobsValue[2];  
+        }
+
+        if (currentVol) {
+            currentVol.volume.value = volume;
+        }
+
+    }, [knobsValue, volume, trackCounter]); //si aggiorna inisme agli useState
+
+
 
     const handlePlay = async () => {
         await Tone.start(); 
         
-        // Capiamo quale traccia è attualmente a schermo nel carosello
+        // traccia nel carosello
         const currentTrackId = tracks[trackCounter].id;
         const player = playersRef.current[currentTrackId];
         const isCurrentlyPlaying = playingStates[currentTrackId];
 
         if (player && isReady) {
             if (isCurrentlyPlaying) {
-                // 1. METTIAMO IN PAUSA LA TRACCIA A SCHERMO
+                
                 const tempoTrascorso = Tone.now() - startTimesRef.current[currentTrackId];
                 offsetsRef.current[currentTrackId] += tempoTrascorso;
                 
                 player.stop();
                 
-                // Aggiorniamo lo stato dicendo che QUESTA traccia è in pausa
+                //pausa
                 setPlayingStates(prev => ({ ...prev, [currentTrackId]: false }));
 
             } else {
-                // 2. FACCIAMO RIPARTIRE LA TRACCIA A SCHERMO
+                //play
                 startTimesRef.current[currentTrackId] = Tone.now();
                 
                 player.start(Tone.now(), offsetsRef.current[currentTrackId]);

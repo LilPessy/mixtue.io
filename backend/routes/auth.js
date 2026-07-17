@@ -4,11 +4,11 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User'); // ✅ U maiuscola per sicurezza!
 const jwt = require('jsonwebtoken');
 
-const upload = require('../middlewares/upload');
+const {uploadPropic} = require('../middlewares/upload');
 
 // ✅ Cambiato app.post in router.post
 // ✅ Aggiunto upload.single('propic') come middleware per intercettare l'immagine
-router.post('/register', upload.single('propic'), async (req, res) => {
+router.post('/register', uploadPropic.single('propic'), async (req, res) => {
   try {
     const { email, password, username, nome, cognome } = req.body;
     

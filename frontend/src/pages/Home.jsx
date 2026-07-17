@@ -26,7 +26,7 @@ function Home() {
     return (
         <section>
             <Navbar />
-            <MixerActions />
+            <MixerActions username={datiUtente?.username || null} />
             
             <div className="sezione-miei-progetti">
                 <h2>I tuoi progetti</h2>
@@ -51,7 +51,7 @@ function Home() {
                 <h2 style={{ textAlign: 'left', alignSelf: 'flex-start', margin: '0 0 16px 0' }}>Continua a Collaborare</h2>
                 
                 {datiUtente ? (
-                    <InsiemeCards progetti={datiUtente.continuaACollaborare} />
+                    <InsiemeCards progetti={datiUtente.collaborazioni} />
                 ) : (
                     <p style={{ textAlign: 'left', alignSelf: 'flex-start', margin: 0 }}>Caricamento dei progetti condivisi...</p>
                 )}

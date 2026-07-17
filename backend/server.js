@@ -194,3 +194,42 @@ app.get('/api/user/test', (req, res) => {
             res.status(500).json({ error: 'Errore interno del server' });
         });
 });
+
+
+// ROTTA PER CREARE UNA NUOVA SESSIONE DINAMICA
+app.post('/api/sessions/crea', async (req, res) => {
+    try {
+        // 1. Leggiamo ENTRAMBI i dati che ci ha spedito React nel body
+        const nomeUtente = req.body.username; 
+        const nomeProgetto = req.body.projectName; // <--- IL NOME SCELTO NEL PROMPT!
+
+        if (!nomeUtente || !nomeProgetto) {
+            return res.status(400).json({ error: 'Username o nome progetto mancanti nella richiesta' });
+        }
+
+        const utente = await User.findOne({ username: nomeUtente });
+        
+        if (!utente) {
+            return res.status(404).json({ error: 'Utente non trovato nel database' });
+        }
+
+        // 2. Creiamo la nuova sessione usando il VERO nome inserito dall'utente!
+        const nuovaSessione = new Session({
+            name: nomeProgetto, // <--- ORA È DINAMICO!
+            ownerId: utente._id,
+            collaborators: [], 
+            tracks: []         
+        });
+
+        const sessioneSalvata = await nuovaSessione.save();
+
+        utente.activeSessions.push(sessioneSalvata._id);
+        await utente.save();
+
+        res.status(201).json(sessioneSalvata);
+
+    } catch (error) {
+        console.error('Errore durante la creazione della sessione:', error);
+        res.status(500).json({ error: 'Impossibile creare la stanza' });
+    }
+});

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const trackSchema = new mongoose.Schema({
-    name: { type: String, required: true, unique: true, trim: true },
+    name: { type: String, required: true, trim: true },
     fileUrl: { type: String, required: true }, 
     state: {
         volume: { type: Number, default: 0, min: -60, max: 12 }, 

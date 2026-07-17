@@ -24,7 +24,8 @@ app.use('/api/auth', authRoutes);
 // Questo dice a Express: "Tutto quello che c'è nella cartella 'public', 
 // rendilo accessibile dal browser sotto l'indirizzo /public"
 // Assicurati di avere 'const path = require("path");' in alto nel file
-app.use('/public', express.static(path.join(__dirname, '..', 'public')));
+// Trova questa riga e modificala COSÌ:
+app.use('/public', express.static(path.join(__dirname, 'public')));
 //Connessione Db
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
@@ -49,6 +50,34 @@ const io = new Server(server, {
 
 app.get('/api/test', (req, res) => {
     res.json({ message: "Il backend di Mixtue.io è vivo e vegeto!" });
+});
+
+// 1. Importiamo ENTRAMBI i middleware estraendoli dall'oggetto
+const { uploadPropic, uploadTrack } = require('./middlewares/upload'); // aggiusta il percorso se serve
+
+// 2. ROTTA PER LA FOTO PROFILO
+// Si aspetta che dal frontend il file si chiami 'image'
+app.post('/api/upload/propic', uploadPropic.single('image'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: "Nessuna immagine caricata" });
+    }
+    // Qui potreste anche aggiornare direttamente il campo 'propic' dell'utente nel DB
+    res.status(200).json({ 
+        message: "Foto profilo aggiornata", 
+        fileName: req.file.filename 
+    });
+});
+
+// 3. ROTTA PER LE TRACCE AUDIO
+// Si aspetta che dal frontend il file si chiami 'audioFile'
+app.post('/api/upload/track', uploadTrack.single('audioFile'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: "Nessuna traccia caricata" });
+    }
+    res.status(200).json({ 
+        message: "Traccia audio caricata per il mixer", 
+        fileName: req.file.filename 
+    });
 });
 
 
@@ -118,25 +147,34 @@ app.get('/api/user/test', (req, res) => {
             // Controlliamo se l'utente ha delle sessioni attive prima di ciclarle
             if (utenteTrovato.activeSessions && utenteTrovato.activeSessions.length > 0) {
                 
-                // Lo smistatore: guarda ogni singola sessione
+                // Lo smistatore ANTIPROIETTILE
                 utenteTrovato.activeSessions.forEach(sessione => {
                     
-                    // L'ownerId della sessione è uguale all'ID del Magnifico Rettore?
-                    if (sessione.ownerId._id.equals(utenteTrovato._id)) {
+                    // 1. SICUREZZA: Se la sessione per qualche motivo non ha un ownerId, la saltiamo ed evitiamo il crash!
+                    if (!sessione.ownerId) {
+                        console.log("Attenzione: Trovata sessione senza proprietario:", sessione.name);
+                        return; 
+                    }
+
+                    // 2. Trasformiamo gli ID in stringhe semplici. È il metodo più sicuro al 100% per confrontarli
+                    const idProprietario = sessione.ownerId._id ? sessione.ownerId._id.toString() : sessione.ownerId.toString();
+                    const idRettore = utenteTrovato._id.toString();
+
+                    if (idProprietario === idRettore) {
                         
                         // SÌ: È un progetto creato da lui!
                         iTuoiProgetti.push({
                             id: sessione._id,
-                            nome: sessione.name // <--- ECCO IL NOME DEL PROGETTO!
+                            nome: sessione.name // Il nome del progetto
                         });
                         
                     } else {
                         
-                        // NO: È un progetto di qualcun altro a cui sta collaborando
+                        // NO: È un progetto di qualcun altro (es. di Daniele) a cui sta collaborando
                         collaborazioni.push({
                             id: sessione._id,
-                            nome: sessione.name, // Il nome del progetto
-                            proprietario: sessione.ownerId.username // Chi l'ha creato (es. Daniele)
+                            nome: sessione.name, 
+                            proprietario: sessione.ownerId.username || "Sconosciuto"
                         });
                         
                     }
@@ -147,7 +185,7 @@ app.get('/api/user/test', (req, res) => {
             res.json({
                 username: utenteTrovato.username,
                 propic: immagineProfilo,
-                iTuoiProgetti: iTuoiProgetti, // React prenderà questo array per il tuo InsiemeCards
+                iTuoiProgetti: iTuoiProgetti,
                 collaborazioni: collaborazioni
             });
         })

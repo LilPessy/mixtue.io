@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 import MixerActions from '../components/MixerAction';
 
 import InsiemeCards from '../components/InsiemeCards';
+import InsiemeCollaborazioni from '../components/InsiemeCollaborazioni';
 
 function Home() {
     // 2. CREIAMO LO STATO: Qui salveremo i dati del Magnifico Rettore appena arrivano
@@ -36,6 +37,13 @@ function Home() {
                     <InsiemeCards progetti={datiUtente.iTuoiProgetti} />
                 ) : (
                     <p>Caricamento dei progetti del Magnifico Rettore in corso...</p>
+                )}
+
+                <h2>Collaborazioni</h2>
+                {datiUtente ? (
+                    <InsiemeCollaborazioni progetti={datiUtente.collaborazioni} />
+                ) : (
+                    <p>Caricamento delle collaborazioni in corso...</p>
                 )}
             </div>
 

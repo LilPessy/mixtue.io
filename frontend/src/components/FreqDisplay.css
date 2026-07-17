@@ -2,7 +2,7 @@
 .displayContainer {
   width: 70%;
   height: 200px; /* FONDAMENTALE: Senza questa altezza le barre non esistono! */
-  background-color: #111; /* Uno sfondo scuro per far risaltare l'analizzatore */
+  background-color: #00102F; /* Uno sfondo scuro per far risaltare l'analizzatore */
   border-radius: 12px;
   padding: 10px;
   margin-top: 10px ;

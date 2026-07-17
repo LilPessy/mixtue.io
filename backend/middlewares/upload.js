@@ -1,16 +1,34 @@
 const multer = require('multer');
 
-// Configurazione dello storage
-const storage = multer.diskStorage({
+// 1. Storage per le Foto Profilo
+const propicStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/propic/'); // Assicurati che questa cartella ESISTA nel tuo progetto!
+    cb(null, 'public/propic/'); 
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
+    // Sostituiamo anche gli spazi nel nome del file con degli underscore per evitare bug negli URL
+    const safeName = file.originalname.replace(/\s+/g, '_');
+    cb(null, Date.now() + '-propic-' + safeName);
   }
 });
 
-const upload = multer({ storage: storage });
+// 2. Storage per le Tracce Audio del Mixer
+const trackStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/tracks/'); // IMPORTANTE: create questa cartella fisicamente nel progetto!
+  },
+  filename: function (req, file, cb) {
+    const safeName = file.originalname.replace(/\s+/g, '_');
+    cb(null, Date.now() + '-track-' + safeName);
+  }
+});
 
-// FONDAMENTALE: Esporta direttamente l'oggetto 'upload'
-module.exports = upload;
+// Creiamo i due "caselli" multer
+const uploadPropic = multer({ storage: propicStorage });
+const uploadTrack = multer({ storage: trackStorage });
+
+// Li esportiamo entrambi come oggetto
+module.exports = {
+    uploadPropic,
+    uploadTrack
+};

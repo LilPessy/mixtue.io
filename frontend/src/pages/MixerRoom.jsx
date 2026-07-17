@@ -42,6 +42,8 @@ function MixerRoom(){
 
     const [knobsValue, setKnobsValue] = useState([0,0,0])
     const [volume, setVolume] = useState(0)
+    const [isMute, setIsMute] = useState(new Array(tracks.length).fill(false));
+    let prevVol=0
 
     const playersRef = useRef({});
     const offsetsRef = useRef({});
@@ -144,6 +146,17 @@ function MixerRoom(){
        setKnobsValue(temp)
     }
 
+    const handleMute = ()=>{
+        const tempMute = [...isMute];
+        tempMute[currentTrackId] = !tempMute[currentTrackId];
+        setIsMute(tempMute);
+        
+        const currentVol = volumesRef.current[currentTrackId];
+        if (currentVol) {
+            currentVol.mute = tempMute[currentTrackId];
+        }
+    }
+
 
     const handelClick = ()=>{
         window.location.href = "http://localhost:5173/"
@@ -185,7 +198,7 @@ function MixerRoom(){
 
             <div className='buttonContainer'>
                 <div className='buttonWrap'>
-                    <Button text="Mute"/>
+                    <Button text={isMute[currentTrackId] ? "Unmute" : "Mute"} callback={handleMute}/>
                 </div>
                 <div className='buttonWrap'>
                     <Button icon={playingStates[currentTrackId] ? pauseIcon : playIcon} callback={handlePlay}/>

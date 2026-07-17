@@ -13,6 +13,7 @@ const Registration = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confermaPassword, setConfermaPassword] = useState('');
+  const [propic, setPropic] = useState(null);
 
   // 2. Anche la funzione va DENTRO il componente, prima del return
   const handleRegister = async () => {
@@ -27,6 +28,9 @@ const Registration = () => {
     formData.append('username', username);
     formData.append('email', email);
     formData.append('password', password);
+    if (propic) {
+      formData.append('propic', propic);
+    }
 
     try {
       const response = await fetch('http://localhost:3000/api/auth/register', {
@@ -38,6 +42,7 @@ const Registration = () => {
 
       if (response.ok) {
         alert("Registrazione completata con successo! Ora puoi effettuare il login.");
+        window.location.href = "http://localhost:5173/login"
         // Volendo qui potremmo svuotare i campi o reindirizzare l'utente
       } else {
         alert(data.message || "Errore durante la registrazione");
@@ -112,6 +117,13 @@ const Registration = () => {
           placeholder="Conferma la password"
           value={confermaPassword}
           onChange={(e) => setConfermaPassword(e.target.value)}
+        />
+
+        <FormField
+          label="Immagine Profilo"
+          type="file"
+          accept="image/*"
+          onChange={(e) => setPropic(e.target.files[0])}
         />
       </div>
 

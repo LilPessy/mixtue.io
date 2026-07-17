@@ -1,6 +1,7 @@
 import React from 'react';
 // 1. IMPORTIAMO L'IMMAGINE DALLA CARTELLA ASSETS
 import sfondoMixer from '../assets/myprogetti.png'; 
+import './CardMieiProgetti.css'; 
 
 function CardMieiProgetti({ nomeProgetto }) {
     return (

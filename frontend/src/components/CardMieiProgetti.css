@@ -1,0 +1,28 @@
+.card-miei-progetti {
+    width: 200px; /* Scegli la larghezza che preferisci */
+    border-radius: 12px;
+    overflow: hidden; /* FONDAMENTALE: taglia via l'immagine che esce dai bordi arrotondati */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.card-immagine {
+    width: 100%;
+    height: 120px; /* Altezza fissa per l'immagine */
+    object-fit: cover; /* Evita che il mixer si schiacci o si deformi */
+    display: block; /* Toglie un fastidioso spazio bianco sotto le immagini */
+}
+
+.card-testo-container {
+    background-color: #7B83EB; /* Il viola che hai usato su Figma */
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+.card-nome-progetto {
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+}

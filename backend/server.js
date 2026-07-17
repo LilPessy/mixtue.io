@@ -17,7 +17,11 @@ const Session = require('./models/Session');
 const authRoutes = require('./routes/auth'); //importiamo il file delle rotte 
 
 // Middleware fondamentali
-app.use(cors()); // Permette a React (porta 5173) di fare richieste a Express (porta 3000)
+// Permette a React (porta 5173) di fare richieste a Express (porta 3000)
+app.use(cors({
+    origin: 'http://localhost:5173', // Deve essere l'URL esatto di React (senza lo slash finale)
+    credentials: true // FONDAMENTALE PER I COOKIE!
+}));
 app.use(express.json()); // Permette di leggere i dati in formato JSON dal frontend
 app.use(cookieParser()); //Permette di leggere e tradurre i cookie che il broser invia al server
 app.use('/api/auth', authRoutes);

@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import FormField from '../components/FormField';
 import Button from '../components/Button';
-import './Registration.css'; // Riutilizziamo lo stesso CSS della registrazione!
+import './Registration.css'; 
 import logo from '../assets/logo.png';
-import { Link } from 'react-router-dom';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  
+  // Inizializziamo la navigazione
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
       const response = await fetch('http://localhost:3000/api/auth/login', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -24,8 +28,10 @@ const Login = () => {
       if (response.ok) {
         // Salviamo il token JWT per mantenere la sessione
         localStorage.setItem('accessToken', data.accessToken);
-        alert("Accesso effettuato con successo!");
-        // Qui si potrebbe usare useNavigate per portare l'utente nella Home
+        
+        // Reindirizziamo l'utente alla Home al posto del vecchio alert
+        // Nota: Assicurati che il percorso della tua home sia '/home' o modificalo in '/'
+        navigate('/'); 
       } else {
         alert(data.message || "Credenziali errate");
       }
@@ -74,7 +80,6 @@ const Login = () => {
       </div>
 
       <div className="button-container">
-        {/* Nella tua foto c'è scritto "Crea Account" ma essendo il login ho messo "Accedi", se preferisci lo cambio! */}
         <Button 
           text="Accedi" 
           callback={handleLogin} 

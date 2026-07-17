@@ -17,13 +17,13 @@ const seedDB = async () => {
         await Session.deleteMany({});
         console.log('🧹 Database pulito!');
 
-        // 2. Creazione array di 5 Utenti
+        // 2. Creazione array di 5 Utenti (ORA CON NOME E COGNOME!)
         const usersData = [
-            { username: 'Magnifico Rettore', email: 'rettore@poliba.it', password: 'password123', propic: '/public/propic/1.jpg' },
-            { username: 'matteormn', email: 'matteo@mixtue.io', password: 'password123', propic: '/public/propic/2.jpg' },
-            { username: 'daniele', email: 'daniele@mixtue.io', password: 'password123', propic: '/public/propic/3.jpg' },
-            { username: 'alice_dj', email: 'alice@mixtue.io', password: 'password123', propic: '/public/propic/4.jpg' },
-            { username: 'arianna', email: 'arianna@mixtue.io', password: 'password123', propic: '/public/propic/5.jpg' }
+            { username: 'Magnifico Rettore', email: 'rettore@poliba.it', password: 'password123', propic: '/public/propic/1.jpg', nome: 'Magnifico', cognome: 'Rettore' },
+            { username: 'matteormn', email: 'matteo@mixtue.io', password: 'password123', propic: '/public/propic/2.jpg', nome: 'Matteo', cognome: 'Romano' },
+            { username: 'daniele', email: 'daniele@mixtue.io', password: 'password123', propic: '/public/propic/3.jpg', nome: 'Daniele', cognome: 'Rossi' },
+            { username: 'alice_dj', email: 'alice@mixtue.io', password: 'password123', propic: '/public/propic/4.jpg', nome: 'Alice', cognome: 'Verdi' },
+            { username: 'arianna', email: 'arianna@mixtue.io', password: 'password123', propic: '/public/propic/5.jpg', nome: 'Arianna', cognome: 'Bianchi' }
         ];
 
         // Inserimento massivo nel DB
@@ -54,7 +54,7 @@ const seedDB = async () => {
             {
                 name: 'Mix Daniele',
                 ownerId: daniele._id,
-                collaborators: [matteo._id],
+                collaborators: [rettore._id],
                 tracks: [{ name: 'Basso Slap', fileUrl: 'bass.mp3', state: { volume: 5 } }] // fileUrl richiesto!
             },
             {
@@ -77,6 +77,7 @@ const seedDB = async () => {
 
         // 4. Aggiorniamo gli utenti assegnando l'ID della sessione creata alla loro array "activeSessions"
         rettore.activeSessions.push(createdSessions[0]._id);
+        rettore.activeSessions.push(createdSessions[2]._id);
         matteo.activeSessions.push(createdSessions[1]._id);
         daniele.activeSessions.push(createdSessions[2]._id);
         alice.activeSessions.push(createdSessions[3]._id);

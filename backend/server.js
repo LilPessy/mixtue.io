@@ -118,25 +118,34 @@ app.get('/api/user/test', (req, res) => {
             // Controlliamo se l'utente ha delle sessioni attive prima di ciclarle
             if (utenteTrovato.activeSessions && utenteTrovato.activeSessions.length > 0) {
                 
-                // Lo smistatore: guarda ogni singola sessione
+                // Lo smistatore ANTIPROIETTILE
                 utenteTrovato.activeSessions.forEach(sessione => {
                     
-                    // L'ownerId della sessione è uguale all'ID del Magnifico Rettore?
-                    if (sessione.ownerId._id.equals(utenteTrovato._id)) {
+                    // 1. SICUREZZA: Se la sessione per qualche motivo non ha un ownerId, la saltiamo ed evitiamo il crash!
+                    if (!sessione.ownerId) {
+                        console.log("Attenzione: Trovata sessione senza proprietario:", sessione.name);
+                        return; 
+                    }
+
+                    // 2. Trasformiamo gli ID in stringhe semplici. È il metodo più sicuro al 100% per confrontarli
+                    const idProprietario = sessione.ownerId._id ? sessione.ownerId._id.toString() : sessione.ownerId.toString();
+                    const idRettore = utenteTrovato._id.toString();
+
+                    if (idProprietario === idRettore) {
                         
                         // SÌ: È un progetto creato da lui!
                         iTuoiProgetti.push({
                             id: sessione._id,
-                            nome: sessione.name // <--- ECCO IL NOME DEL PROGETTO!
+                            nome: sessione.name // Il nome del progetto
                         });
                         
                     } else {
                         
-                        // NO: È un progetto di qualcun altro a cui sta collaborando
+                        // NO: È un progetto di qualcun altro (es. di Daniele) a cui sta collaborando
                         collaborazioni.push({
                             id: sessione._id,
-                            nome: sessione.name, // Il nome del progetto
-                            proprietario: sessione.ownerId.username // Chi l'ha creato (es. Daniele)
+                            nome: sessione.name, 
+                            proprietario: sessione.ownerId.username || "Sconosciuto"
                         });
                         
                     }
@@ -147,7 +156,7 @@ app.get('/api/user/test', (req, res) => {
             res.json({
                 username: utenteTrovato.username,
                 propic: immagineProfilo,
-                iTuoiProgetti: iTuoiProgetti, // React prenderà questo array per il tuo InsiemeCards
+                iTuoiProgetti: iTuoiProgetti,
                 collaborazioni: collaborazioni
             });
         })

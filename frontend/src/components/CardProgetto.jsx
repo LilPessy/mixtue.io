@@ -1,13 +1,12 @@
 import React from 'react';
-// 1. IMPORTIAMO L'IMMAGINE DALLA CARTELLA ASSETS
 import sfondoMixer from '../assets/myprogetti.png'; 
-import './CardMieiProgetti.css'; 
+import './CardMieiProgetti.css'; // Puoi lasciare questo CSS o rinominare anche lui
 
-function CardMieiProgetti({ nomeProgetto }) {
+// Aggiungiamo 'proprietario' come prop opzionale
+function CardProgetto({ nomeProgetto, proprietario }) {
     return (
         <div className="card-miei-progetti">
             
-            {/* 2. INSERIAMO L'IMMAGINE */}
             <div className="card-immagine-container">
                 <img 
                     src={sfondoMixer} 
@@ -16,13 +15,18 @@ function CardMieiProgetti({ nomeProgetto }) {
                 />
             </div>
 
-            {/* 3. IL TESTO IN BASSO (La parte viola su Figma) */}
             <div className="card-testo-container">
                 <h3 className="card-nome-progetto">{nomeProgetto}</h3>
+                
+                {/* IL CONTROLLO CONDIZIONALE DI DANIELE */}
+                {/* Se 'proprietario' esiste (cioè se glielo passiamo), stampa la riga. Altrimenti non stampa nulla! */}
+                {proprietario && (
+                    <p className="card-proprietario-testo">di {proprietario}</p>
+                )}
             </div>
             
         </div>
     );
 }
 
-export default CardMieiProgetti;
+export default CardProgetto;

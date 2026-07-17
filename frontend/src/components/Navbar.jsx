@@ -1,42 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import './Navbar.css';
-function Navbar(){
-    // 1. LO STATO: La "memoria" del componente. 
-    // All'inizio parte con dei valori di default, in attesa che il server risponda.
-    const [user, setUser] = useState({ 
-        username: 'Caricamento...', 
-        propic: '' 
-    });
+function Navbar({username, propic}){
 
-    // 2. L'EFFETTO: Questa funzione scatta in automatico appena la Navbar appare a schermo.
-    useEffect(() => {
-        // Facciamo la chiamata alla rotta API che abbiamo appena creato nel backend
-        fetch('http://localhost:3000/api/user/test')
-            .then(response => response.json())
-            .then(data => {
-                // Quando arrivano i dati, aggiorniamo la "memoria" (lo Stato). 
-                // React se ne accorgerà e aggiornerà la grafica da solo!
-                setUser({
-                    username: data.username,
-                    propic: data.propic ? `http://localhost:3000${data.propic}` : '' 
-                });
-            })
-            .catch(error => {
-                console.error("Errore di connessione:", error);
-                setUser({ username: 'Ospite', propic: '' });
-            });
-    }, []); // ⚠️ L'array vuoto è FONDAMENTALE: dice a React "Fai questa chiamata UNA SOLA VOLTA all'avvio".
+    const url = "http://localhost:3000" + propic
 
     return(
         <nav className='navbar'>
             <div className='Names'>
                 <h1>Buonasera</h1>
-                <h2>{user.username}</h2>
+                <h2>{username}</h2>
             </div>
 
             <div className='Profile'>
-                {user.propic ? (
-                    <img className='profile-pic' src={user.propic} alt="Immagine profilo" />
+                {propic ? (
+                    <img className='profile-pic' src={url} alt="Immagine profilo" />
                 ) : (
                     <div className='placeholder'>Ospite</div>
                 )}

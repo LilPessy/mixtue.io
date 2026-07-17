@@ -123,6 +123,7 @@ const Registration = () => {
           label="Immagine Profilo"
           type="file"
           accept="image/*"
+          value={propic ? propic.name : ""}
           onChange={(e) => setPropic(e.target.files[0])}
         />
       </div>

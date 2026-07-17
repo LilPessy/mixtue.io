@@ -7,12 +7,17 @@ const FormField = ({ label, placeholder, value, onChange, type = 'text', accept 
       <label className="input-label">{label}</label>
       
       {type === 'file' ? (
-        <input
-          type="file"
-          accept={accept}
-          onChange={onChange}
-          className="custom-input"
-          style={{ padding: '14px 24px' }}/>
+        <label className="custom-file-upload">
+          <input
+            type="file"
+            accept={accept}
+            onChange={onChange}
+            className="hidden-file-input"
+          />
+          <span className="file-upload-text">
+            {value ? value : "Scegli un'immagine dal dispositivo..."}
+          </span>
+        </label>
       ) : (
         /* Altrimenti mostriamo il campo normale (testo, email, password...) */
         <input

@@ -233,3 +233,59 @@ app.post('/api/sessions/crea', async (req, res) => {
         res.status(500).json({ error: 'Impossibile creare la stanza' });
     }
 });
+
+// ROTTA PER UNIRSI A UNA SESSIONE ESISTENTE (COLLABORA) - VERSIONE SICURA
+app.post('/api/sessions/unisciti', async (req, res) => {
+    try {
+        const codiceStanza = req.body.roomCode;
+        const nomeUtente = req.body.username;
+
+        if (!codiceStanza || !nomeUtente) {
+            return res.status(400).json({ error: 'Codice stanza o username mancanti' });
+        }
+
+        // 1. Troviamo l'utente
+        const utente = await User.findOne({ username: nomeUtente });
+        if (!utente) {
+            return res.status(404).json({ error: 'Utente non trovato nel database.' });
+        }
+
+        // 2. Troviamo la sessione
+        const sessione = await Session.findOne({ roomeCode: codiceStanza });
+        if (!sessione) {
+            return res.status(404).json({ error: 'Stanza non trovata. Controlla di aver scritto bene il codice!' });
+        }
+
+        // 3. I CONTROLLI DI SICUREZZA CONVERTITI IN STRINGHE (Anticrash!)
+        const utenteIdStr = utente._id.toString();
+        const ownerIdStr = sessione.ownerId.toString();
+
+        // Controlliamo se è il proprietario
+        if (ownerIdStr === utenteIdStr) {
+            return res.status(400).json({ error: 'Sei già il proprietario di questa stanza! La trovi nella sezione "I tuoi progetti".' });
+        }
+
+        // Controlliamo se è già collaboratore
+        const isAlreadyCollaborator = sessione.collaborators.some(collabId => collabId.toString() === utenteIdStr);
+        if (isAlreadyCollaborator) {
+            return res.status(400).json({ error: 'Fai già parte di questa stanza come collaboratore! Controlla la sezione "Collaborazioni".' });
+        }
+
+        // 4. Tutto ok, lo aggiungiamo!
+        sessione.collaborators.push(utente._id);
+        await sessione.save();
+
+        // Lo aggiungiamo anche alle sessioni attive dell'utente (sempre convertendo in stringa per sicurezza)
+        const haGiaLaSessioneAttiva = utente.activeSessions.some(sessionId => sessionId.toString() === sessione._id.toString());
+        if (!haGiaLaSessioneAttiva) {
+            utente.activeSessions.push(sessione._id);
+            await utente.save();
+        }
+
+        res.status(200).json({ sessionId: sessione._id });
+
+    } catch (error) {
+        console.error('Errore durante l\'unione alla sessione:', error);
+        res.status(500).json({ error: 'Errore interno del server' });
+    }
+});

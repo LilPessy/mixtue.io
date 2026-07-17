@@ -82,7 +82,14 @@ server.listen(PORT, () => {
 //Gestione della home funzioni js per queri al DB
 
 const ottieniUtente = (nomeUtente) => {
-    return User.findOne({ username: nomeUtente }); 
+    return User.findOne({ username: nomeUtente })
+        .populate({
+            path: 'activeSessions', // Trasforma gli ID delle sessioni in oggetti completi
+            populate: {
+                path: 'ownerId', // Dentro ogni sessione, va a prendere i dati di chi l'ha creata
+                select: 'username' // Ci facciamo dare solo lo username per comodità
+            }
+        }); 
 };
 
 const ottieniImmagine = (utente) => {
@@ -93,27 +100,58 @@ const ottieniImmagine = (utente) => {
 };
 
 app.get('/api/user/test', (req, res) => {
-    const usernameCercato = 'Magnifico Rettore'; // Il tuo account di test
+    // Ovviamente, teniamo il nostro VIP!
+    const usernameCercato = 'Magnifico Rettore'; 
 
-    // Chiamiamo la prima funzione...
     ottieniUtente(usernameCercato)
         .then(utenteTrovato => {
-            // Controllo di sicurezza: e se l'utente non esiste?
             if (!utenteTrovato) {
                 return res.status(404).json({ error: 'Utente non trovato' });
             }
 
-            // Chiamiamo la seconda funzione passandogli l'utente appena trovato!
             const immagineProfilo = ottieniImmagine(utenteTrovato);
 
-            // Assembliamo la risposta e la inviamo a React in formato JSON
+            // Prepariamo le due "scatole" vuote
+            const iTuoiProgetti = [];
+            const collaborazioni = [];
+
+            // Controlliamo se l'utente ha delle sessioni attive prima di ciclarle
+            if (utenteTrovato.activeSessions && utenteTrovato.activeSessions.length > 0) {
+                
+                // Lo smistatore: guarda ogni singola sessione
+                utenteTrovato.activeSessions.forEach(sessione => {
+                    
+                    // L'ownerId della sessione è uguale all'ID del Magnifico Rettore?
+                    if (sessione.ownerId._id.equals(utenteTrovato._id)) {
+                        
+                        // SÌ: È un progetto creato da lui!
+                        iTuoiProgetti.push({
+                            id: sessione._id,
+                            nome: sessione.name // <--- ECCO IL NOME DEL PROGETTO!
+                        });
+                        
+                    } else {
+                        
+                        // NO: È un progetto di qualcun altro a cui sta collaborando
+                        collaborazioni.push({
+                            id: sessione._id,
+                            nome: sessione.name, // Il nome del progetto
+                            proprietario: sessione.ownerId.username // Chi l'ha creato (es. Daniele)
+                        });
+                        
+                    }
+                });
+            }
+
+            // Assembliamo il JSON finale e lo spediamo a React!
             res.json({
                 username: utenteTrovato.username,
-                propic: immagineProfilo
+                propic: immagineProfilo,
+                iTuoiProgetti: iTuoiProgetti, // React prenderà questo array per il tuo InsiemeCards
+                collaborazioni: collaborazioni
             });
         })
         .catch(error => {
-            // Catturiamo qualsiasi errore (es. database disconnesso) per evitare il crash del server
             console.error('Errore nel recupero utente:', error);
             res.status(500).json({ error: 'Errore interno del server' });
         });

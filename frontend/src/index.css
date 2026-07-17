@@ -1,0 +1,57 @@
+/* src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #ffffff;
+  overflow-x: hidden;
+}
+
+/* Background elements */
+body::before {
+  content: '';
+  position: absolute;
+  top: 400px;
+  left: -80px;
+  width: 250px;
+  height: 250px;
+  background-color: #90E0EF;
+  border-radius: 50%;
+  z-index: 0;
+  opacity: 0.8;
+}
+
+body::after {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  right: -50px;
+  width: 300px;
+  height: 300px;
+  background-color: #201A6A;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+.sezione-miei-progetti {
+  position: relative;
+  z-index: 1;
+  margin-top: 40px;
+  padding-left: 24px;
+}
+
+.sezione-miei-progetti h2 {
+  color: #201A6A;
+  font-size: 20px;
+  margin: 0 0 16px 0 !important;
+  text-align: left !important;
+  width: 100%;
+}
+

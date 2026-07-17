@@ -1,7 +1,75 @@
+.navbar {
+  /* Remove background from main element since we use a pseudo-element */
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 40px 24px 60px 24px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.navbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  /* Make it 150% width and center it to get an ultra-wide curve */
+  left: -25%;
+  width: 150%;
+  height: 100%;
+  background-color: #0A3297;
+  border-bottom-left-radius: 50%;
+  border-bottom-right-radius: 50%;
+  z-index: -1;
+}
+
+.Names {
+  display: flex;
+  flex-direction: column;
+}
+
+.Names h1 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 12px 0; /* Increased margin to avoid overlap */
+  font-family: 'Inter', sans-serif;
+}
+
+.Names h2 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.Profile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 40px;
+  right: 24px;
+}
+
 .profile-pic {
-    width: 60px; 
-    height: 60px; 
-    borderRadius: 50%; 
-    objectFit: cover;
-    background-color: brown;
+  width: 60px; /* Made smaller */
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.placeholder {
+  width: 60px; /* Made smaller */
+  height: 60px;
+  border-radius: 50%;
+  background-color: #8292ED;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
 }

@@ -30,7 +30,7 @@ function Navbar(){
     return(
         <nav className='navbar'>
             <div className='Names'>
-                <h1>Ciao! Vuoi un mix tu e io?</h1>
+                <h1>Buonasera</h1>
                 <h2>{user.username}</h2>
             </div>
 
@@ -38,7 +38,7 @@ function Navbar(){
                 {user.propic ? (
                     <img className='profile-pic' src={user.propic} alt="Immagine profilo" />
                 ) : (
-                    <div className='placeholder'>Nessuna immagine</div>
+                    <div className='placeholder'>Ospite</div>
                 )}
             </div>
         </nav>

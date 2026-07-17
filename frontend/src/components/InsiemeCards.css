@@ -1,0 +1,18 @@
+.cards-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px;
+  padding: 10px 24px 20px 24px; /* Padding on sides so cards align with text but overflow fully */
+  margin: 0 -24px; /* Negative margin to let it scroll to the edges of the screen */
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.cards-scroll-container::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.cards-scroll-container > * {
+  scroll-snap-align: start;
+}

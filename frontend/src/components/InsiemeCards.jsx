@@ -1,4 +1,5 @@
 import React from 'react';
+import './InsiemeCards.css';
 // Importiamo lo stampino che hai appena creato!
 import CardMieiProgetti from './CardMieiProgetti';
 
@@ -18,6 +19,7 @@ function InsiemeCards({ progetti }) {
                 <CardMieiProgetti 
                     key={progetto.id}           // OBBLIGATORIO: React ha bisogno di una chiave unica per ogni elemento della lista
                     nomeProgetto={progetto.nome} // Passiamo il nome del progetto alla card
+                    autore={progetto.autore}
                 />
             ))}
         </div>

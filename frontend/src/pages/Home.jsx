@@ -38,6 +38,16 @@ function Home() {
                     <p>Caricamento dei progetti del Magnifico Rettore in corso...</p>
                 )}
             </div>
+
+            <div className="sezione-miei-progetti" style={{ marginBottom: '80px', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <h2 style={{ textAlign: 'left', alignSelf: 'flex-start', margin: '0 0 16px 0' }}>Continua a Collaborare</h2>
+                
+                {datiUtente ? (
+                    <InsiemeCards progetti={datiUtente.continuaACollaborare} />
+                ) : (
+                    <p style={{ textAlign: 'left', alignSelf: 'flex-start', margin: 0 }}>Caricamento dei progetti condivisi...</p>
+                )}
+            </div>
         </section>
     );
 }

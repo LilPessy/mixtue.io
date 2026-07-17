@@ -188,6 +188,7 @@ app.get('/api/user/test', (req, res) => {
             // Assembliamo il JSON finale e lo spediamo a React!
             res.json({
                 username: utenteTrovato.username,
+                nome: utenteTrovato.nome,
                 propic: immagineProfilo,
                 iTuoiProgetti: iTuoiProgetti,
                 collaborazioni: collaborazioni

@@ -54,7 +54,7 @@ function Home() {
 
     return (
         <section>
-            <Navbar username={datiUtente?.username} propic={datiUtente?.propic}/>
+            <Navbar username={datiUtente?.nome?.toUpperCase()} propic={datiUtente?.propic}/>
             <MixerActions username={datiUtente?.username || null} />
             
             <div className="sezione-miei-progetti">
@@ -65,21 +65,11 @@ function Home() {
                     <p>Caricamento dei progetti in corso...</p>
                 )}
 
-                <h2>Collaborazioni</h2>
+                <h2>{datiUtente?.username?.toUpperCase()}, continua a collaborare con: </h2>
                 {datiUtente ? (
                     <InsiemeCollaborazioni progetti={datiUtente.collaborazioni} />
                 ) : (
                     <p>Caricamento delle collaborazioni in corso...</p>
-                )}
-            </div>
-
-            <div className="sezione-miei-progetti" style={{ marginBottom: '80px', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <h2 style={{ textAlign: 'left', alignSelf: 'flex-start', margin: '0 0 16px 0' }}>Continua a Collaborare</h2>
-                
-                {datiUtente ? (
-                    <InsiemeCards progetti={datiUtente.collaborazioni} />
-                ) : (
-                    <p style={{ textAlign: 'left', alignSelf: 'flex-start', margin: 0 }}>Caricamento dei progetti condivisi...</p>
                 )}
             </div>
         </section>

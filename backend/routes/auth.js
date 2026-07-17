@@ -177,6 +177,7 @@ router.get('/me', verifyToken, async (req, res) => {
         // 3. Spediamo il pacchetto a React
         res.json({
             username: utenteTrovato.username,
+            nome: utenteTrovato.nome,
             propic: immagineProfilo,
             iTuoiProgetti: iTuoiProgetti,
             collaborazioni: collaborazioni

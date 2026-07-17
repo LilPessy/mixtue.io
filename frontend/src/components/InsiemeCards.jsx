@@ -1,6 +1,5 @@
 import React from 'react';
-import './InsiemeCards.css';
-import CardProgetto from './CardProgetto'; // Importiamo la card universale
+import CardProgetto from './CardProgetto'; 
 
 function InsiemeCards({ progetti }) {
     if (!progetti || progetti.length === 0) return <p>Nessun progetto.</p>;
@@ -10,8 +9,8 @@ function InsiemeCards({ progetti }) {
             {progetti.map((progetto) => (
                 <CardProgetto 
                     key={progetto.id}           
+                    id={progetto.id}             
                     nomeProgetto={progetto.nome} 
-                    autore={progetto.autore}
                 />
             ))}
         </div>

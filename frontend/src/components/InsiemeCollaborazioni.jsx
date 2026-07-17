@@ -1,5 +1,5 @@
 import React from 'react';
-import CardProgetto from './CardProgetto'; // Importiamo la STESSA card universale
+import CardProgetto from './CardProgetto'; 
 
 function InsiemeCollaborazioni({ progetti }) {
     if (!progetti || progetti.length === 0) return <p>Nessuna collaborazione.</p>;
@@ -9,8 +9,9 @@ function InsiemeCollaborazioni({ progetti }) {
             {progetti.map((progetto) => (
                 <CardProgetto 
                     key={progetto.id}           
+                    id={progetto.id}             
                     nomeProgetto={progetto.nome} 
-                    proprietario={progetto.proprietario} // Passiamo il dato extra per attivare la scritta!
+                    proprietario={progetto.proprietario} 
                 />
             ))}
         </div>

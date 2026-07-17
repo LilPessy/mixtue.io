@@ -74,8 +74,13 @@ function Home() {
                     <p>Caricamento delle collaborazioni in corso...</p>
                 )}
             </div>
+
+            <footer className="footer-container">
+                <p>&copy; {new Date().getFullYear()} MixTuEIo. Tutti i diritti riservati.</p>
+                <p className="footer-credits">Sviluppato con ☕, 💻 e tanti sani scleri (nessun santo è stato chiamato dal calendario ancora)</p>
+            </footer>
         </section>
     );
 }
-
+    
 export default Home;

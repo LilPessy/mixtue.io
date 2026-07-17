@@ -8,7 +8,8 @@ import Fader from '../components/Fader'
 import Dot from '../components/Dot'
 import FreqDisplay from '../components/FreqDisplay'
 import ExitIcon from '../assets/exit.png'
-import PlayIcon from '../assets/play.png'
+import playIcon from '../assets/play.png'
+import pauseIcon from '../assets/pause.png'
 
 function MixerRoom(){
 
@@ -187,7 +188,7 @@ function MixerRoom(){
                     <Button text="Mute"/>
                 </div>
                 <div className='buttonWrap'>
-                    <Button icon={PlayIcon} callback={handlePlay}/>
+                    <Button icon={playingStates[currentTrackId] ? pauseIcon : playIcon} callback={handlePlay}/>
                 </div>
                 
             </div>

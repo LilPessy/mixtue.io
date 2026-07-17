@@ -1,0 +1,7 @@
+.profile-pic {
+    width: 60px; 
+    height: 60px; 
+    borderRadius: 50%; 
+    objectFit: cover;
+    background-color: brown;
+}

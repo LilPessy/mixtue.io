@@ -5,13 +5,10 @@
     background: #003495;
     width: 100%;
     border-radius: 10px;
-    padding: 16px 10px;
+    padding: 5px 10px;
+    height: 100%;
     color: white;
-    font-family: 'Nunito', ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    font-weight: 700;
-    font-size: 1.1rem;
-    cursor: pointer;
-    box-sizing: border-box;
+    font-size: 20px;
 }
 
 .button img{

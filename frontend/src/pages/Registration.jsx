@@ -42,6 +42,7 @@ const Registration = () => {
 
       if (response.ok) {
         alert("Registrazione completata con successo! Ora puoi effettuare il login.");
+        window.location.href = "http://localhost:5173/login"
         // Volendo qui potremmo svuotare i campi o reindirizzare l'utente
       } else {
         alert(data.message || "Errore durante la registrazione");

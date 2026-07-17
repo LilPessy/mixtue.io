@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http'); // Modulo nativo di Node
 const { Server } = require('socket.io');
-
+const path = require('path');
 const app = express();
 const PORT = 3000;
 
@@ -21,6 +21,10 @@ app.use(cors()); // Permette a React (porta 5173) di fare richieste a Express (p
 app.use(express.json()); // Permette di leggere i dati in formato JSON dal frontend
 app.use(cookieParser()); //Permette di leggere e tradurre i cookie che il broser invia al server
 app.use('/api/auth', authRoutes);
+// Questo dice a Express: "Tutto quello che c'è nella cartella 'public', 
+// rendilo accessibile dal browser sotto l'indirizzo /public"
+// Assicurati di avere 'const path = require("path");' in alto nel file
+app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 //Connessione Db
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
@@ -61,6 +65,13 @@ io.on('connection', (socket) => {
         console.log(`Utente disconnesso: ${socket.id}`);
     });
 });
+
+//da togliere
+const fs = require('fs');
+const percorsoTest = path.join(__dirname, '..', 'public', 'propic', '1.jpg');
+
+console.log("Cerco il file qui:", percorsoTest);
+console.log("Il file esiste davvero?", fs.existsSync(percorsoTest));
 
 // Avvio del server
 server.listen(PORT, () => {

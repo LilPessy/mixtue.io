@@ -6,11 +6,13 @@ function Knob({freq, onChange}){
 
     const handleChange =  (e)=>{
         setValue(e.target.value)
-        onChange(e.target, value)
+        console.log(e.target.id + value)
+        onChange(e.target.id, v)
     }
 
     const percentage = (value - (-40)) / (12 - (-40));
     const rotationDegrees = (percentage * 270) - 135; 
+    let v = -40 + (rotationDegrees+135)*52/270;
 
     return (
         <div className="knobContainer">
@@ -20,11 +22,12 @@ function Knob({freq, onChange}){
             </div>
 
             <input 
+                id={freq === "HF" ? 0 : freq === "MF" ? 1 : 2}
                 type="range" 
                 min={-40} 
                 max={12} 
-                step="0.1" 
-                value={value} 
+                step="1" 
+                value={v} 
                 onChange={handleChange}
                 className="hiddenInput"
             />

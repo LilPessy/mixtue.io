@@ -1,42 +1,68 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import MixerActions from '../components/MixerAction';
-
 import InsiemeCards from '../components/InsiemeCards';
 import InsiemeCollaborazioni from '../components/InsiemeCollaborazioni';
 
 function Home() {
-    // 2. CREIAMO LO STATO: Qui salveremo i dati del Magnifico Rettore appena arrivano
     const [datiUtente, setDatiUtente] = useState(null);
+    const navigate = useNavigate(); 
 
-    // 3. LA CHIAMATA AL BACKEND (Fetch)
-    // useEffect con [] alla fine fa in modo che questa richiesta parta SOLO UNA VOLTA quando apri la pagina
     useEffect(() => {
-        fetch('http://localhost:3000/api/user/test')
-            .then(response => response.json())
-            .then(data => {
-                console.log("Dati arrivati dal server:", data); // Così puoi vederli nella console (F12)
-                setDatiUtente(data); // Salviamo i dati nello stato!
-            })
-            .catch(errore => {
-                console.error("Errore durante il recupero dei progetti:", errore);
-            });
-    }, []);
+        const fetchUserData = async () => {
+            const token = localStorage.getItem('accessToken');
+            
+            // Se non c'è token, rimandiamo subito al login senza fare chiamate
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+
+            try {
+                // Chiamiamo la rotta protetta
+                const response = await fetch('http://localhost:3000/api/auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Dati autenticati arrivati dal server:", data);
+                    
+                    // Salvataggio in sicurezza: se gli array non esistono, mettiamo array vuoti
+                    setDatiUtente({
+                        ...data,
+                        iTuoiProgetti: data.iTuoiProgetti || [],
+                        collaborazioni: data.collaborazioni || []
+                    });
+                } else {
+                    console.warn("Sessione scaduta o non valida.");
+                    localStorage.removeItem('accessToken');
+                    navigate('/login');
+                }
+            } catch (errore) {
+                console.error("Errore di rete durante il recupero dell'utente:", errore);
+            }
+        };
+
+        fetchUserData();
+    }, [navigate]);
 
     return (
         <section>
-            <Navbar />
+            <Navbar username={datiUtente?.username} propic={datiUtente?.propic}/>
             <MixerActions username={datiUtente?.username || null} />
             
             <div className="sezione-miei-progetti">
                 <h2>I tuoi progetti</h2>
-                
-                {/* 4. RENDERING CONDIZIONALE E PASSAGGIO PROPS */}
-                {/* Se i dati sono arrivati (datiUtente non è null), stampa InsiemeCards passandogli l'array! */}
                 {datiUtente ? (
                     <InsiemeCards progetti={datiUtente.iTuoiProgetti} />
                 ) : (
-                    <p>Caricamento dei progetti del Magnifico Rettore in corso...</p>
+                    <p>Caricamento dei progetti in corso...</p>
                 )}
 
                 <h2>Collaborazioni</h2>

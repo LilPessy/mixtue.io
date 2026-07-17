@@ -56,10 +56,10 @@ function MixerRoom(){
     
 
     useEffect(() => {
-    // Cicliamo l'array e creiamo un player per ogni traccia
+    // Player per ogni traccia
         tracks.forEach((track) => {
             const player = new Tone.Player({
-                url: `http://localhost:5173/${track.url}`, 
+                url: `http://localhost:3000/${track.url}`, 
                 onload: () => {
                     setIsReady(true);
                 }
@@ -74,7 +74,6 @@ function MixerRoom(){
             playersRef.current[track.id] = player;
             eqsRef.current[track.id] = eq;
             volumesRef.current[track.id] = vol;
-            
             offsetsRef.current[track.id] = 0;
             startTimesRef.current[track.id] = 0;
 

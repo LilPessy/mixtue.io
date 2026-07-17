@@ -42,7 +42,7 @@ function MixerActions() {
                     <input 
                         type="text" 
                         className="room-input"
-                        placeholder="Inserisci il codice stanza (es. jam-con-daniele)" 
+                        placeholder="Inserisci il codice stanza" 
                         value={codiceStanza}
                         // Ogni volta che digiti una lettera, aggiorna lo stato
                         onChange={(e) => setCodiceStanza(e.target.value)} 

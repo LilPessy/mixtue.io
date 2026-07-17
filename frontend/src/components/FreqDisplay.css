@@ -1,7 +1,28 @@
+/* Il "vetro" del display */
+.displayContainer {
+  width: 70%;
+  height: 200px; /* FONDAMENTALE: Senza questa altezza le barre non esistono! */
+  background-color: #111; /* Uno sfondo scuro per far risaltare l'analizzatore */
+  border-radius: 12px;
+  padding: 10px;
+  margin-top: 10px ;
+  
+  /* Flexbox per affiancare le barre e farle partire dal basso */
+  display: flex;
+  justify-content: space-evenly; /* Spazia le barre in modo uniforme */
+  align-items: flex-end; /* Ancora le barre al pavimento del contenitore */
+  
+  /* Un po' di ombra interna per l'effetto schermo incassato (opzionale) */
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Le singole frequenze (Low, Mid, High) */
 .bar {
-  width: 50px;
-  background-color: #7ce0ff; /* Il colore azzurro della tua immagine */
-  border-radius: 20px;
-  /* Anima il cambio di altezza in modo fluido */
-  transition: height 0.05s ease-out; 
+  width: 25%; /* Larghezza di ogni colonna rispetto al display */
+  background-color: #8b9be2; /* Usa il lilla del tuo tema, oppure un classico verde/azzurro neon */
+  height: 0%; /* Partono da zero */
+  border-radius: 16px 16px 0 0; /* Arrotonda solo gli angoli in alto */
+  
+  /* Aggiungiamo una leggerissima transizione per rendere il movimento meno "scattoso" */
+  transition: height 0.05s ease-out;
 }

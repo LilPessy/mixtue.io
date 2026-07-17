@@ -17,6 +17,9 @@ export default function FreqDisplay({ audioSource }) {
     // Colleghiamo la traccia in riproduzione all'analizzatore
     if (audioSource) {
       audioSource.connect(fft);
+      if (barLowRef.current) barLowRef.current.style.height = 0;
+      if (barMidRef.current) barMidRef.current.style.height = 0;
+      if (barHighRef.current) barHighRef.current.style.height = 0;
     }
 
     // 3. La funzione che aggiorna la grafica 60 volte al secondo
@@ -51,9 +54,10 @@ export default function FreqDisplay({ audioSource }) {
 
   return (
     <div className="displayContainer">
-      <div ref={barLowRef} className="bar"></div>
-      <div ref={barMidRef} className="bar"></div>
-      <div ref={barHighRef} className="bar"></div>
+        <div ref={barHighRef} className="bar" style={{backgroundColor:'#87EAFE'}}></div>
+        <div ref={barMidRef} className="bar" style={{backgroundColor:'#7B8CE1'}}></div>
+        <div ref={barLowRef} className="bar" style={{backgroundColor:'#201971'}}></div>
+      
     </div>
   );
 }

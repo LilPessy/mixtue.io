@@ -6,21 +6,25 @@ import InsiemeCards from '../components/InsiemeCards';
 import InsiemeCollaborazioni from '../components/InsiemeCollaborazioni';
 
 function Home() {
+    // SE MANCA QUESTA RIGA, REACT CRASHA!
     const [datiUtente, setDatiUtente] = useState(null);
     const navigate = useNavigate(); 
+
+    // Variabile ultra-sicura per il nome formattato
+    const nomeFormattato = datiUtente?.nome 
+        ? datiUtente.nome.charAt(0).toUpperCase() + datiUtente.nome.slice(1).toLowerCase()
+        : '';
 
     useEffect(() => {
         const fetchUserData = async () => {
             const token = localStorage.getItem('accessToken');
             
-            // Se non c'è token, rimandiamo subito al login senza fare chiamate
             if (!token) {
                 navigate('/login');
                 return;
             }
 
             try {
-                // Chiamiamo la rotta protetta
                 const response = await fetch('http://localhost:3000/api/auth/me', {
                     method: 'GET',
                     headers: {
@@ -31,21 +35,18 @@ function Home() {
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log("Dati autenticati arrivati dal server:", data);
                     
-                    // Salvataggio in sicurezza: se gli array non esistono, mettiamo array vuoti
                     setDatiUtente({
                         ...data,
                         iTuoiProgetti: data.iTuoiProgetti || [],
                         collaborazioni: data.collaborazioni || []
                     });
                 } else {
-                    console.warn("Sessione scaduta o non valida.");
                     localStorage.removeItem('accessToken');
                     navigate('/login');
                 }
             } catch (errore) {
-                console.error("Errore di rete durante il recupero dell'utente:", errore);
+                console.error("Errore di rete:", errore);
             }
         };
 
@@ -54,18 +55,19 @@ function Home() {
 
     return (
         <section>
-            <Navbar username={datiUtente?.nome?.toUpperCase()} propic={datiUtente?.propic}/>
+            {/* Passiamo nomeFormattato se esiste, altrimenti l'username */}
+            <Navbar username={nomeFormattato || datiUtente?.username} propic={datiUtente?.propic} />
             <MixerActions username={datiUtente?.username || null} />
             
             <div className="sezione-miei-progetti">
-                <h2>I tuoi progetti</h2>
+                <h2>I tuoi progetti {datiUtente?.username}</h2>
                 {datiUtente ? (
                     <InsiemeCards progetti={datiUtente.iTuoiProgetti} />
                 ) : (
                     <p>Caricamento dei progetti in corso...</p>
                 )}
 
-                <h2>{datiUtente?.username?.toUpperCase()}, continua a collaborare con: </h2>
+                <h2>{nomeFormattato || datiUtente?.username}, continua a collaborare con: </h2>
                 {datiUtente ? (
                     <InsiemeCollaborazioni progetti={datiUtente.collaborazioni} />
                 ) : (

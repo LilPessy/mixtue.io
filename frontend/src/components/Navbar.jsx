@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import './Navbar.css';
 function Navbar(){
     // 1. LO STATO: La "memoria" del componente. 
     // All'inizio parte con dei valori di default, in attesa che il server risponda.
@@ -36,7 +36,7 @@ function Navbar(){
 
             <div className='Profile'>
                 {user.propic ? (
-                    <img src={user.propic} alt="Immagine Profilo" />
+                    <img className='profile-pic' src={user.propic} alt="Immagine profilo" />
                 ) : (
                     <div className='placeholder'>Nessuna immagine</div>
                 )}

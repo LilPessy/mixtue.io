@@ -40,8 +40,16 @@ function MixerRoom(){
 
     const [trackCounter, setTrackCounter] = useState(0);
 
-    const [knobsValue, setKnobsValue] = useState([0,0,0])
-    const [volume, setVolume] = useState(0)
+    const [knobsValues, setKnobsValues] = useState({
+        0: [0, 0, 0], 
+        1: [0, 0, 0]
+    });
+    
+    // Stessa cosa per il volume
+    const [volumes, setVolumes] = useState({
+        0: 0,
+        1: 0
+    });
     const [isMute, setIsMute] = useState(new Array(tracks.length).fill(false));
     let prevVol=0
 
@@ -88,24 +96,27 @@ function MixerRoom(){
     }, [tracks]); //solo all'avvio
 
     useEffect(() => {
-        //traccia attiva nel carosello
-        const currentTrackId = tracks[trackCounter].id;
+        if (!tracks[trackCounter]) return;
         
+        const currentTrackId = tracks[trackCounter].id;
         const currentEq = eqsRef.current[currentTrackId];
         const currentVol = volumesRef.current[currentTrackId];
 
-        
+        // Peschiamo i valori specifici di questa traccia
+        const currentKnobs = knobsValues[currentTrackId] || [0, 0, 0];
+        const currentVolume = volumes[currentTrackId] || 0;
+
         if (currentEq) {
-            currentEq.high.value = knobsValue[0]; 
-            currentEq.mid.value  = knobsValue[1];  
-            currentEq.low.value  = knobsValue[2];  
+            currentEq.high.value = currentKnobs[0]; 
+            currentEq.mid.value  = currentKnobs[1];  
+            currentEq.low.value  = currentKnobs[2];  
         }
 
         if (currentVol) {
-            currentVol.volume.value = volume;
+            currentVol.volume.value = currentVolume;
         }
 
-    }, [knobsValue, volume, trackCounter]); //si aggiorna inisme agli useState
+    }, [knobsValues, volumes, trackCounter, tracks]);//si aggiorna inisme agli useState
 
 
 
@@ -140,11 +151,26 @@ function MixerRoom(){
     }
 
 
-    const setFreqValue = (id, value)=>{
-       const temp = [...knobsValue];
-       temp[id] = value
-       setKnobsValue(temp)
-    }
+    const handleFreqChange = (freqId, value) => {
+        const currentTrackId = tracks[trackCounter]?.id;
+        if (currentTrackId === undefined) return;
+
+        setKnobsValues(prev => {
+            // Peschiamo l'array della traccia attuale, o un array di default [0,0,0]
+            const trackKnobs = prev[currentTrackId] ? [...prev[currentTrackId]] : [0, 0, 0];
+            trackKnobs[freqId] = value; // 0=HF, 1=MF, 2=LF
+            
+            // Restituiamo tutto l'oggetto aggiornato
+            return { ...prev, [currentTrackId]: trackKnobs };
+        });
+    };
+
+    const handleVolumeChange = (value) => {
+        const currentTrackId = tracks[trackCounter]?.id;
+        if (currentTrackId === undefined) return;
+
+        setVolumes(prev => ({ ...prev, [currentTrackId]: value }));
+    };
 
     const handleMute = ()=>{
         const tempMute = [...isMute];
@@ -195,7 +221,12 @@ function MixerRoom(){
                 };
                 
                 // Aggiorniamo lo stato delle tracce (il carosello si allungherà in automatico)
-                setTracks([...tracks, newTrack])
+                setTracks([...tracks, newTrack]);
+                setIsMute(prev => [...prev, false]); 
+                
+                // AGGIUNGI QUESTE DUE RIGHE:
+                setKnobsValues(prev => ({ ...prev, [newTrack.id]: [0, 0, 0] }));
+                setVolumes(prev => ({ ...prev, [newTrack.id]: 0 }));
                 
                 // Un feedback per capire che è andato tutto a buon fine
                 console.log("Traccia caricata con successo:", data.fileName);
@@ -209,6 +240,9 @@ function MixerRoom(){
             console.error("Errore di comunicazione col backend:", error);
         }
     };
+
+    const currentKnobs = knobsValues[currentTrackId] || [0, 0, 0];
+    const currentVolume = volumes[currentTrackId] || 0;
 
     return(
         <section>
@@ -226,16 +260,16 @@ function MixerRoom(){
             </div>
 
             <div className='knobsContainer'>
-                <Knob freq="HF" onChange={setFreqValue}/>
-                <Knob freq="MF" onChange={setFreqValue}/>
-                <Knob freq="LF" onChange={setFreqValue}/>
+                <Knob freq="HF" value={currentKnobs[0]} onChange={(val) => handleFreqChange(0, val)}/>
+                <Knob freq="MF" value={currentKnobs[1]} onChange={(val) => handleFreqChange(0, val)}/>
+                <Knob freq="LF" value={currentKnobs[2]} onChange={(val) => handleFreqChange(0, val)}/>
             </div>
 
             <FreqDisplay audioSource={currentAudioSource}/>
 
 
             <div className='faderContainer'>
-                <Fader onChange={setVolume}/>
+                <Fader value={currentVolume} onChange={handleVolumeChange}/>
             </div>
 
             <div className='buttonContainer'>

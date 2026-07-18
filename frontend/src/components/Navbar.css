@@ -6,7 +6,6 @@
   align-items: center; /* Allinea verticalmente gli elementi al centro */
   padding: 40px 24px 100px 24px; /* Aumentato il padding inferiore per far scendere la curva blu */
   position: relative;
-  z-index: 1;
   width: 100%;
   box-sizing: border-box;
 }
@@ -78,29 +77,37 @@
     position: absolute;
     top: 110%; /* Lo sposta appena sotto l'immagine del profilo */
     right: 0;  /* Lo allinea a destra */
-    background-color: #2c2c2c; /* Colore scuro, cambialo se non si intona */
-    border: 1px solid #444;
-    border-radius: 8px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
-    padding: 10px;
+    background-color: transparent; /* Nessuno sfondo contenitore */
+    border: none;
+    padding: 0; /* Rimuove il contorno bianco attorno al bottone */
     z-index: 1000;
-    min-width: 120px;
+    min-width: 140px;
 }
 
 /* Stile per il bottone Esci */
 .logout-btn {
-    background-color: #e74c3c; /* Rosso per far capire che è un'azione forte */
-    color: white;
+    background-color: #e74c3c; /* Sfondo rosso acceso */
+    color: #ffffff; /* Testo bianco */
     border: none;
-    padding: 10px 15px;
-    border-radius: 6px;
+    padding: 12px 16px;
+    border-radius: 8px;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 700; /* Stesso peso del testo delle altre action */
+    font-family: 'Inter', sans-serif;
     width: 100%;
-    font-size: 16px;
-    transition: background-color 0.2s ease;
+    font-size: 15px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2); /* Leggera ombra rossa per intonarsi con l'app */
 }
 
 .logout-btn:hover {
-    background-color: #c0392b; /* Rosso un po' più scuro quando ci passi sopra */
+    background-color: #c0392b; /* Rosso più scuro al passaggio del mouse */
+    box-shadow: 0 6px 16px rgba(231, 76, 60, 0.3);
+}
+.logout-btn img {
+    filter: brightness(0) invert(1); /* Rende l'icona bianca per contrastare con il rosso */
 }

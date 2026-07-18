@@ -53,12 +53,20 @@ function MixerRoom() {
                     const initKnobs = {};
                     const initVols = {};
                     const initMute = {};
-                    fetchedTracks.forEach(t => {
-                        initKnobs[t._id] = [0, 0, 0];
-                        initVols[t._id] = 0;
-                        initMute[t._id] = false;
-                    });
                     
+                    fetchedTracks.forEach(t => {
+                        // Se la traccia ha uno stato salvato per l'EQ, lo carichiamo, altrimenti [0, 0, 0]
+                        if (t.state && t.state.eq) {
+                            initKnobs[t._id] = [t.state.eq.high, t.state.eq.mid, t.state.eq.low];
+                        } else {
+                            initKnobs[t._id] = [0, 0, 0];
+                        }
+
+                        // Carichiamo volume e mute salvati (con l'operatore ?? che mette 0/false se i dati mancano)
+                        initVols[t._id] = t.state?.volume ?? 0;
+                        initMute[t._id] = t.state?.isMuted ?? false;
+                    });
+
                     setKnobsValues(initKnobs);
                     setVolumes(initVols);
                     setIsMute(initMute);
@@ -188,9 +196,7 @@ function MixerRoom() {
         });
     }
 
-    const handelClick = () => {
-        window.location.href = "http://localhost:5173/"
-    }
+    
 
     const copyOnClick = (e) => {
         const code = e.target.innerHTML;
@@ -235,6 +241,49 @@ function MixerRoom() {
             console.error("Errore di comunicazione col backend:", error);
         }
     };
+
+    const salvaProgettoIntero = async () => {
+    // 1. Creiamo un array mappando le tracce correnti e assemblando i valori dai vari stati
+    const payload = tracks.map(t => {
+        const tId = t._id;
+        const tracciaKnobs = knobsValues[tId] || [0, 0, 0];
+        
+        return {
+            trackId: tId,
+            volume: volumes[tId] ?? 0,
+            isMuted: isMute[tId] ?? false,
+            eq: {
+                high: tracciaKnobs[0],
+                mid: tracciaKnobs[1],
+                low: tracciaKnobs[2]
+            }
+        };
+    });
+
+    // 2. Spediamo l'array gigante al backend
+    try {
+        const response = await fetch(`http://localhost:3000/api/session/${sessionId}/state/bulk`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            alert("Progetto salvato con successo! 💾");
+        } else {
+            console.error("Errore durante il salvataggio del mixer.");
+        }
+    } catch (error) {
+        console.error("Errore di rete durante il salvataggio:", error);
+    }
+};
+
+const handelClick = async () => {
+        await salvaProgettoIntero()
+        window.location.href = "http://localhost:5173/";
+    }
 
     // --- PROTEZIONE RENDER ---
     // Se non ci sono tracce, peschiamo valori finti per non rompere il JSX

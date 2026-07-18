@@ -189,7 +189,7 @@
     width: 350px; /* Reso più piccolo (prima era 500px) */
     height: 350px;
     background-color: transparent; /* Vuoto al centro */
-    border: 40px solid #201A6A; /* Solo bordo spesso */
+    border: 40px solid #0A3297; /* Solo bordo spesso, stesso colore della navbar */
     border-radius: 50%;
     z-index: -10; 
     pointer-events: none; 

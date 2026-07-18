@@ -2,17 +2,51 @@
   display: flex;
   overflow-x: auto;
   gap: 16px;
-  padding: 10px 24px 20px 24px; /* Padding on sides so cards align with text but overflow fully */
-  margin: 0 -24px; /* Negative margin to let it scroll to the edges of the screen */
+  padding: 10px 24px 20px 24px;
+  margin: 0 -24px;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: auto;
 }
 
 .cards-scroll-container::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
+  height: 8px;
+}
+
+.cards-scroll-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.cards-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(123, 139, 228, 0.5);
+  border-radius: 4px;
+}
+
+.cards-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(123, 139, 228, 0.8);
 }
 
 .cards-scroll-container > * {
   scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+.cards-scroll-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.cards-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(123, 139, 228, 0.5); /* Usa il colore lilla/azzurro per il pollice */
+  border-radius: 4px;
+}
+
+.cards-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(123, 139, 228, 0.8);
+}
+
+.cards-scroll-container > * {
+  scroll-snap-align: start;
+  flex-shrink: 0; /* IMPEDISCE alle card di rimpicciolirsi o incollarsi se sono troppe */
 }

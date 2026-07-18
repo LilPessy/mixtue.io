@@ -177,3 +177,37 @@
 .sezione-miei-progetti h2:nth-of-type(2) {
     margin-top: 50px !important;
 }
+
+/* Stili per il contenitore a scorrimento orizzontale delle card */
+.cards-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px;
+  padding: 10px 0px 20px 0px; 
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: auto;
+}
+
+.cards-scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.cards-scroll-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.cards-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(123, 139, 228, 0.5);
+  border-radius: 4px;
+}
+
+.cards-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(123, 139, 228, 0.8);
+}
+
+.cards-scroll-container > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}

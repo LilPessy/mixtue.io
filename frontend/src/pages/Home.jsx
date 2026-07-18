@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import MixerActions from '../components/MixerAction';
 import InsiemeCards from '../components/InsiemeCards';
 import InsiemeCollaborazioni from '../components/InsiemeCollaborazioni';
+import './Home.css';
 
 function Home() {
     const [datiUtente, setDatiUtente] = useState(null);

@@ -1,12 +1,15 @@
-import { useState } from "react";
 import './Fader.css'
 
-function Fader({onChange}){
-    const [value, setValue] = useState(0);
+// 1. Aggiungiamo 'value' tra i props
+function Fader({ value, onChange }) {
 
     const handleChange = (e) => {
-        setValue(e.target.value);
-        onChange(e.target.value);
+        // 2. Convertiamo il valore in numero (gli input range restituiscono sempre stringhe)
+        // Questo evita bug matematici in Tone.js!
+        const numericValue = Number(e.target.value);
+        
+        // 3. Avvisiamo MixerRoom del nuovo valore
+        onChange(numericValue);
     };
 
     return (
@@ -17,6 +20,7 @@ function Fader({onChange}){
                 min={-60} 
                 max={10} 
                 step="1" 
+                // 4. Usiamo il valore dettato dal genitore
                 value={value} 
                 onChange={handleChange}
                 className="slider"

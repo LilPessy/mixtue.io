@@ -1,17 +1,18 @@
 import React from 'react';
-import './InsiemeCards.css';
-import CardProgetto from './CardProgetto'; // Importiamo la card universale
+import CardProgetto from './CardProgetto'; 
 
-function InsiemeCards({ progetti }) {
+// AGGIUNTO onDelete QUI!
+function InsiemeCards({ progetti, onDelete }) {
     if (!progetti || progetti.length === 0) return <p>Nessun progetto.</p>;
 
     return (
         <div className="cards-scroll-container">
             {progetti.map((progetto) => (
                 <CardProgetto 
-                    key={progetto.id}           
+                    key={progetto.id || progetto._id}           
+                    id={progetto.id || progetto._id}             
                     nomeProgetto={progetto.nome} 
-                    autore={progetto.autore}
+                    onDelete={onDelete} // <--- PASSATO ALLA CARD!
                 />
             ))}
         </div>

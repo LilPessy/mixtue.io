@@ -1,61 +1,112 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import MixerActions from '../components/MixerAction';
-
 import InsiemeCards from '../components/InsiemeCards';
 import InsiemeCollaborazioni from '../components/InsiemeCollaborazioni';
 
 function Home() {
-    // 2. CREIAMO LO STATO: Qui salveremo i dati del Magnifico Rettore appena arrivano
     const [datiUtente, setDatiUtente] = useState(null);
+    const navigate = useNavigate(); 
 
-    // 3. LA CHIAMATA AL BACKEND (Fetch)
-    // useEffect con [] alla fine fa in modo che questa richiesta parta SOLO UNA VOLTA quando apri la pagina
+    const nomeFormattato = datiUtente?.nome 
+        ? datiUtente.nome.charAt(0).toUpperCase() + datiUtente.nome.slice(1).toLowerCase()
+        : '';
+
     useEffect(() => {
-        fetch('http://localhost:3000/api/user/test')
-            .then(response => response.json())
-            .then(data => {
-                console.log("Dati arrivati dal server:", data); // Così puoi vederli nella console (F12)
-                setDatiUtente(data); // Salviamo i dati nello stato!
-            })
-            .catch(errore => {
-                console.error("Errore durante il recupero dei progetti:", errore);
+        const fetchUserData = async () => {
+            const token = localStorage.getItem('accessToken');
+            
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    setDatiUtente({
+                        ...data,
+                        iTuoiProgetti: data.iTuoiProgetti || [],
+                        collaborazioni: data.collaborazioni || []
+                    });
+                } else {
+                    localStorage.removeItem('accessToken');
+                    navigate('/login');
+                }
+            } catch (errore) {
+                console.error("Errore di rete:", errore);
+            }
+        };
+
+        fetchUserData();
+    }, [navigate]);
+
+    const gestisciEliminazione = async (idProgetto) => {
+        const conferma = window.confirm("Sei sicuro di voler rimuovere questo progetto dalla tua bacheca?");
+        if (!conferma) return;
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/sessions/elimina/${idProgetto}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: datiUtente.username }) 
             });
-    }, []);
+
+            if (response.ok) {
+                setDatiUtente(prev => ({
+                    ...prev,
+                    iTuoiProgetti: prev.iTuoiProgetti.filter(p => p.id !== idProgetto && p._id !== idProgetto),
+                    collaborazioni: prev.collaborazioni.filter(p => p.id !== idProgetto && p._id !== idProgetto)
+                }));
+            } else {
+                window.alert("Si è verificato un problema durante l'eliminazione.");
+            }
+        } catch (errore) {
+            console.error("Errore di rete durante l'eliminazione:", errore);
+        }
+    };
 
     return (
         <section>
-            <Navbar />
-            <MixerActions />
+            <Navbar username={nomeFormattato || datiUtente?.username} propic={datiUtente?.propic} />
+            <MixerActions username={datiUtente?.username || null} />
             
             <div className="sezione-miei-progetti">
-                <h2>I tuoi progetti</h2>
-                
-                {/* 4. RENDERING CONDIZIONALE E PASSAGGIO PROPS */}
-                {/* Se i dati sono arrivati (datiUtente non è null), stampa InsiemeCards passandogli l'array! */}
+                <h2>I tuoi progetti {datiUtente?.username}</h2>
                 {datiUtente ? (
-                    <InsiemeCards progetti={datiUtente.iTuoiProgetti} />
+                    <InsiemeCards 
+                        progetti={datiUtente.iTuoiProgetti} 
+                        onDelete={gestisciEliminazione} 
+                    />
                 ) : (
-                    <p>Caricamento dei progetti del Magnifico Rettore in corso...</p>
+                    <p>Caricamento dei progetti in corso...</p>
                 )}
 
-                <h2>Collaborazioni</h2>
+                <h2>{nomeFormattato || datiUtente?.username}, continua a collaborare con: </h2>
                 {datiUtente ? (
-                    <InsiemeCollaborazioni progetti={datiUtente.collaborazioni} />
+                    <InsiemeCollaborazioni 
+                        progetti={datiUtente.collaborazioni} 
+                        onDelete={gestisciEliminazione} 
+                    />
                 ) : (
                     <p>Caricamento delle collaborazioni in corso...</p>
                 )}
             </div>
 
-            <div className="sezione-miei-progetti" style={{ marginBottom: '80px', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <h2 style={{ textAlign: 'left', alignSelf: 'flex-start', margin: '0 0 16px 0' }}>Continua a Collaborare</h2>
-                
-                {datiUtente ? (
-                    <InsiemeCards progetti={datiUtente.continuaACollaborare} />
-                ) : (
-                    <p style={{ textAlign: 'left', alignSelf: 'flex-start', margin: 0 }}>Caricamento dei progetti condivisi...</p>
-                )}
-            </div>
+            <footer className="footer-container">
+                <p>&copy; {new Date().getFullYear()} MixTuEIo. Tutti i diritti riservati.</p>
+                <p className="footer-credits">Sviluppato con ☕, 💻 e tanti sani scleri (nessun santo è stato chiamato dal calendario ancora)</p>
+            </footer>
         </section>
     );
 }

@@ -13,9 +13,16 @@ const seedDB = async () => {
         console.log('🔥 Connesso a MongoDB Atlas per il seeding!');
 
         // 1. Pulizia delle collezioni per non avere duplicati
+        // 1. Pulizia delle collezioni per non avere duplicati E DISTRUGGERE GLI INDICI VECCHI
         await User.deleteMany({});
-        await Session.deleteMany({});
-        console.log('🧹 Database pulito!');
+        
+        // Questo comando cancella l'intera collezione Session e le sue regole sbagliate
+        try {
+            await Session.collection.drop();
+            console.log('🗑️ Collezione Session e vecchi indici distrutti!');
+        } catch (e) {
+            console.log('Nessuna collezione Session da distruggere, procedo...');
+        }
 
         // 2. Creazione array di 5 Utenti (ORA CON NOME E COGNOME!)
         const usersData = [

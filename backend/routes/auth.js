@@ -12,6 +12,11 @@ router.post('/register', uploadPropic.single('propic'), async (req, res) => {
   try {
     const { email, password, username, nome, cognome } = req.body;
     
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Inserisci un indirizzo email valido" });
+    }
+    
     const existingUser = await User.findOne({ 
       $or: [ 
         { email: email }, 

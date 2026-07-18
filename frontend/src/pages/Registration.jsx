@@ -17,6 +17,12 @@ const Registration = () => {
 
   // 2. Anche la funzione va DENTRO il componente, prima del return
   const handleRegister = async () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert("Inserisci un indirizzo email valido!");
+      return;
+    }
+
     if (password !== confermaPassword) {
       alert("Le password non coincidono!");
       return;

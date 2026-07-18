@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import sfondoMixer from '../assets/myprogetti.png'; 
+import sfondoCollabora from '../assets/collabora.png'; 
 import './CardMieiProgetti.css'; 
 
 // AGGIUNTO onDelete TRA LE PROPS!
@@ -21,12 +22,15 @@ function CardProgetto({ id, nomeProgetto, proprietario, onDelete }) {
         }
     };
 
+    // Determiniamo quale immagine usare
+    const immagineSfondo = proprietario ? sfondoCollabora : sfondoMixer;
+
     return (
         <div className="card-miei-progetti" onClick={apriProgetto} style={{ cursor: 'pointer' }}>
             
             <div className="card-immagine-container">
                 <img 
-                    src={sfondoMixer} 
+                    src={immagineSfondo} 
                     alt={`Sfondo del progetto ${nomeProgetto}`} 
                     className="card-immagine"
                 />

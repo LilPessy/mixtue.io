@@ -161,6 +161,44 @@ app.post('/api/upload/track', uploadTrack.single('audioFile'), async (req, res) 
     }
 });
 
+// ROTTA PER AGGIORNARE LO STATO DI UNA TRACCIA (Volume, EQ, Mute)
+// ROTTA PER SALVARE LO STATO DELL'INTERO MIXER
+app.put('/api/session/:sessionId/state/bulk', async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const tracksState = req.body; // Questo ora è un array di oggetti!
+
+        const sessione = await Session.findById(sessionId);
+        if (!sessione) {
+            return res.status(404).json({ error: "Sessione non trovata" });
+        }
+
+        // Cicliamo l'array che ci arriva dal frontend
+        tracksState.forEach(trackData => {
+            // Cerchiamo la traccia corrispondente nel database
+            const tracciaDB = sessione.tracks.id(trackData.trackId);
+            
+            if (tracciaDB) {
+                // Aggiorniamo i valori
+                tracciaDB.state.volume = trackData.volume;
+                tracciaDB.state.isMuted = trackData.isMuted;
+                tracciaDB.state.eq.high = trackData.eq.high;
+                tracciaDB.state.eq.mid = trackData.eq.mid;
+                tracciaDB.state.eq.low = trackData.eq.low;
+            }
+        });
+
+        // Salviamo la sessione con tutte le tracce aggiornate in un colpo solo
+        await sessione.save();
+
+        res.status(200).json({ message: "Mixer salvato con successo!" });
+
+    } catch (error) {
+        console.error("Errore durante il salvataggio massivo:", error);
+        res.status(500).json({ error: "Errore interno del server" });
+    }
+});
+
 // ROTTA PER CREARE UNA NUOVA SESSIONE DINAMICA
 app.post('/api/sessions/crea', async (req, res) => {
     try {

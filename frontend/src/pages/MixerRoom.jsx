@@ -261,8 +261,8 @@ function MixerRoom(){
 
             <div className='knobsContainer'>
                 <Knob freq="HF" value={currentKnobs[0]} onChange={(val) => handleFreqChange(0, val)}/>
-                <Knob freq="MF" value={currentKnobs[1]} onChange={(val) => handleFreqChange(0, val)}/>
-                <Knob freq="LF" value={currentKnobs[2]} onChange={(val) => handleFreqChange(0, val)}/>
+                <Knob freq="MF" value={currentKnobs[1]} onChange={(val) => handleFreqChange(1, val)}/>
+                <Knob freq="LF" value={currentKnobs[2]} onChange={(val) => handleFreqChange(2, val)}/>
             </div>
 
             <FreqDisplay audioSource={currentAudioSource}/>

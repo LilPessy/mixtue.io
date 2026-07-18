@@ -18,7 +18,7 @@ function Navbar({ username, propic }) {
     // 3. Cambiamo il saluto in base alla fascia oraria
     if (oraAttuale >= 13 && oraAttuale < 18) {
         saluto = "Buon pomeriggio";
-    } else if (oraAttuale >= 18 || oraAttuale < 23) {
+    } else if (oraAttuale >= 18 && oraAttuale < 23) {
         saluto = "Buonasera"; 
     } else if (oraAttuale >= 23 || oraAttuale < 5) {
         saluto = "Buonanotte"; 

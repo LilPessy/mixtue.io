@@ -162,6 +162,37 @@
     width: 100%;
     padding: 20px;
     box-sizing: border-box;
+    position: relative; /* Per sicurezza, anche se usiamo fixed per i cerchi */
+}
+
+/* Semicerchio azzurro a sinistra (fisso) */
+.sezione-miei-progetti::before {
+    content: '';
+    position: fixed;
+    top: 45%; 
+    left: -150px; 
+    width: 300px;
+    height: 300px;
+    background-color: transparent; /* Vuoto al centro */
+    border: 30px solid #8ce1fc; /* Solo bordo spesso */
+    border-radius: 50%;
+    z-index: -10; 
+    pointer-events: none; 
+}
+
+/* Semicerchio blu scuro in basso a destra (fisso) */
+.sezione-miei-progetti::after {
+    content: '';
+    position: fixed;
+    bottom: -150px; /* Riadattato per la nuova dimensione */
+    right: -150px; 
+    width: 350px; /* Reso più piccolo (prima era 500px) */
+    height: 350px;
+    background-color: transparent; /* Vuoto al centro */
+    border: 40px solid #201A6A; /* Solo bordo spesso */
+    border-radius: 50%;
+    z-index: -10; 
+    pointer-events: none; 
 }
 
 .sezione-miei-progetti h2 {
@@ -210,4 +241,20 @@
 .cards-scroll-container > * {
   scroll-snap-align: start;
   flex-shrink: 0;
+}
+
+/* Footer sempre in primo piano rispetto ai cerchi di sfondo */
+.footer-container {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 20px;
+    background-color: transparent; /* Mantiene lo sfondo naturale */
+    color: #1A115C; /* Assicura che il testo sia leggibile */
+    font-weight: 500;
+}
+
+.footer-credits {
+    font-size: 14px;
+    opacity: 0.8;
 }

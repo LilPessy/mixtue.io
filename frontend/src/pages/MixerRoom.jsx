@@ -12,6 +12,10 @@ import ExitIcon from '../assets/exit.png'
 import playIcon from '../assets/play.png'
 import pauseIcon from '../assets/pause.png'
 import { io } from 'socket.io-client';
+import toWav from 'audiobuffer-to-wav';
+
+// ... (dentro il componente MixerRoom, vicino agli altri useState)
+
 
 // Inizializziamo il socket FUORI dal componente, così non si riconnette
 // ogni volta che React ridisegna la pagina
@@ -23,6 +27,8 @@ function MixerRoom() {
     const [roomCode, setRoomCode] = useState('');
     const [roomName, setRoomName] = useState('');
     const [tracks, setTracks] = useState([]);
+    const [isExporting, setIsExporting] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(null);
 
     // Trasformiamo questi stati da array a oggetti (Mappe) che usano il VERO _id di MongoDB
     const [knobsValues, setKnobsValues] = useState({});
@@ -38,6 +44,13 @@ function MixerRoom() {
     const startTimesRef = useRef({});
     const eqsRef = useRef({});
     const volumesRef = useRef({});
+    const recorderRef = useRef(null);
+
+    // Inizializziamo il registratore all'avvio e lo attacchiamo all'uscita Master
+    useEffect(() => {
+        recorderRef.current = new Tone.Recorder();
+        Tone.Destination.connect(recorderRef.current);
+    }, []);
 
     useEffect(() => {
         const getCodiceStanza = async () => {
@@ -410,6 +423,78 @@ const handelClick = async () => {
         window.location.href = "http://localhost:5173/";
     }
 
+    const handleExport = async () => {
+        if (tracks.length === 0) {
+            alert("Non ci sono tracce da esportare!");
+            return;
+        }
+
+        const inputDurata = window.prompt("Quanti secondi vuoi registrare? (es. 30, 60, 120)", "30");
+
+        if (inputDurata === null || inputDurata.trim() === "") {
+            return; 
+        }
+
+        const durataScelta = parseInt(inputDurata, 10);
+
+        if (isNaN(durataScelta) || durataScelta <= 0) {
+            alert("Per favore, inserisci un numero valido di secondi!");
+            return;
+        }
+
+        setIsExporting(true);
+        setTimeLeft(durataScelta); // Impostiamo i secondi di partenza
+
+        // Inizializziamo la variabile dell'intervallo fuori dal try così possiamo pulirla anche in caso di errore
+        let intervalId = null; 
+
+        try {
+            await Tone.start();
+            alert(`Partirà la registrazione! Durerà esattamente ${durataScelta} secondi. Preparati a muovere i fader!`);
+
+            recorderRef.current.start();
+
+
+            // FACCIAMO PARTIRE IL CONTO ALLA ROVESCIA
+            intervalId = setInterval(() => {
+                setTimeLeft(prev => {
+                    if (prev <= 1) {
+                        clearInterval(intervalId); // Fermiamo il loop quando arriva a 0
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+            // Aspettiamo la fine della registrazione
+            await new Promise(resolve => setTimeout(resolve, durataScelta * 1000));
+
+            const recordingBlob = await recorderRef.current.stop();
+            
+            tracks.forEach(track => {
+                const player = playersRef.current[track._id];
+                if (player) player.stop();
+                setPlayingStates(prev => ({ ...prev, [track._id]: false }));
+            });
+
+            const url = URL.createObjectURL(recordingBlob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = `${roomName || 'Mix'}_LiveExport.webm`; 
+            anchor.click();
+            URL.revokeObjectURL(url);
+
+        } catch (error) {
+            console.error("Errore durante la registrazione:", error);
+            alert("C'è stato un problema durante l'esportazione.");
+        } finally {
+            // PULIZIA FINALE: Resettiamo tutto a prescindere da come è andata
+            if (intervalId) clearInterval(intervalId);
+            setIsExporting(false);
+            setTimeLeft(null);
+        }
+    };
+
     // --- PROTEZIONE RENDER ---
     // Se non ci sono tracce, peschiamo valori finti per non rompere il JSX
     const currentTrackId = tracks[trackCounter]?._id || null;
@@ -481,6 +566,10 @@ const handelClick = async () => {
                     onChange={handleTrackUpload}
                 />
                 <Button text="Aggiungi Traccia" callback={triggerFileInput}/>
+            </div>
+
+            <div className='trackButtonWrap' style={{marginTop: '20px'}}>
+                 <Button text={isExporting ? `Registrazione: ${timeLeft}s rimanenti` : "Esporta traccia"} callback={handleExport}/>
             </div>
         </section>
     )

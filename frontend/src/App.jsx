@@ -11,7 +11,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registration" element={<Registration />} />
-        <Route path="/mixer/:roomId" element={<MixerRoom />} />
+        <Route path="/mixer/:sessionId" element={<MixerRoom />} />
         
         <Route path="*" element={<h1>404 Not Found</h1>} />
       </Routes>

@@ -68,20 +68,30 @@ app.get('/api/test', (req, res) => {
 });
 
 
-app.get('/api/session/:id', (req,res)=>{
+// GUARDA QUI: ho aggiunto "async" prima di (req, res)
+app.get('/api/session/:id', async (req, res) => {
     try {
+        // Estraiamo l'id specifico
         const sessionId = req.params.id;
+        
         const sessione = await Session.findById(sessionId);
+        
         if (!sessione) {
             return res.status(404).json({ message: "Sessione non trovata" });
         }
-        res.json({ roomCode: sessione.roomeCode });
+
+        // Usiamo roomeCode come scritto nel tuo schema!
+        res.json({ 
+            roomCode: sessione.roomeCode,
+            name: sessione.name,
+            tracks: sessione.tracks
+         });
 
     } catch (error) {
-        console.error("Errore nel recupero della sessione:", error);
-        res.status(500).json({ message: "Errore del server durante il recupero del codice" });
+        console.error("Errore:", error);
+        res.status(500).json({ message: "Errore del server" });
     }
-})
+});
 
 // 1. Importiamo ENTRAMBI i middleware estraendoli dall'oggetto
 const { uploadPropic, uploadTrack } = require('./middlewares/upload');
@@ -98,14 +108,57 @@ app.post('/api/upload/propic', uploadPropic.single('image'), (req, res) => {
 });
 
 // 3. ROTTA PER LE TRACCE AUDIO
-app.post('/api/upload/track', uploadTrack.single('audioFile'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: "Nessuna traccia caricata" });
+app.post('/api/upload/track', uploadTrack.single('audioFile'), async (req, res) => {
+    try {
+        // 1. Controlliamo che il file sia arrivato
+        if (!req.file) {
+            return res.status(400).json({ error: "Nessuna traccia caricata" });
+        }
+
+        // 2. Leggiamo l'ID della sessione che React ci ha mandato nel formData
+        const { sessionId } = req.body;
+
+        if (!sessionId) {
+            return res.status(400).json({ error: "ID della sessione mancante" });
+        }
+
+        // 3. Cerchiamo la sessione nel database
+        const sessione = await Session.findById(sessionId);
+
+        if (!sessione) {
+            return res.status(404).json({ error: "Sessione non trovata" });
+        }
+
+        // 4. Creiamo il percorso e il nome che salveremo nel DB
+        const urlTraccia = `/public/tracks/${req.file.filename}`;
+        
+        // Usiamo il nome originale del file caricato (es. "basso.mp3") o quello generato
+        const nomeTraccia = req.file.originalname || req.file.filename;
+
+        // 5. Creiamo l'oggetto traccia seguendo il tuo Schema Mongoose
+        const nuovaTraccia = {
+            name: nomeTraccia,
+            fileUrl: urlTraccia,
+        };
+
+        // 6. Infiliamo la traccia nell'array della sessione
+        sessione.tracks.push(nuovaTraccia);
+
+        // 7. Salviamo la sessione aggiornata nel DB
+        await sessione.save();
+
+        // 8. Rispondiamo a React con successo, inviando i dati della traccia appena salvata
+        res.status(200).json({ 
+            message: "Traccia aggiunta con successo alla sessione", 
+            fileName: req.file.filename,
+            // Restituiamo la traccia così com'è stata salvata nel DB (con il suo _id generato da Mongoose)
+            track: sessione.tracks[sessione.tracks.length - 1] 
+        });
+
+    } catch (error) {
+        console.error("Errore durante il salvataggio della traccia nel DB:", error);
+        res.status(500).json({ error: "Errore interno del server" });
     }
-    res.status(200).json({ 
-        message: "Traccia audio caricata per il mixer", 
-        fileName: req.file.filename 
-    });
 });
 
 // ROTTA PER CREARE UNA NUOVA SESSIONE DINAMICA

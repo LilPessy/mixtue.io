@@ -4,7 +4,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 40px 24px 60px 24px;
+  padding: 40px 24px 100px 24px; /* Aumentato il padding inferiore per far scendere la curva blu */
   position: relative;
   z-index: 1;
   width: 100%;
@@ -32,14 +32,14 @@
 
 .Names h1 {
   font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 12px 0; /* Increased margin to avoid overlap */
+  font-weight: 700;
+  margin: 0 0 4px 0; /* Margine ridotto per avvicinarlo al nome come in foto */
   font-family: 'Inter', sans-serif;
 }
 
 .Names h2 {
   font-size: 32px;
-  font-weight: 700;
+  font-weight: 800; /* Ancora più bold come in foto */
   margin: 0;
   font-family: 'Inter', sans-serif;
 }
@@ -54,10 +54,11 @@
 }
 
 .profile-pic {
-  width: 60px; /* Made smaller */
-  height: 60px;
+  width: 50px; /* Leggermente più piccola */
+  height: 50px;
   border-radius: 50%;
   object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* Ombra per farla staccare dallo sfondo */
 }
 
 .placeholder {

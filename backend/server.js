@@ -294,9 +294,13 @@ app.delete('/api/sessions/elimina/:id', async (req, res) => {
             return res.status(400).json({ error: 'Username mancante' });
         }
 
+        // 1. Cerchiamo l'utente
         const utente = await User.findOne({ username: nomeUtente });
         
+        // 2. CERCHIAMO LA SESSIONE (Questa riga mancava!)
+        const sessione = await Session.findById(sessionId);
 
+        // 3. Ora possiamo fare il controllo in sicurezza
         if (!utente || !sessione) {
             return res.status(404).json({ error: 'Utente o stanza non trovati' });
         }
@@ -304,16 +308,20 @@ app.delete('/api/sessions/elimina/:id', async (req, res) => {
         const isOwner = sessione.ownerId.toString() === utente._id.toString();
 
         if (isOwner) {
+            // Se è il proprietario, distruggiamo la stanza
             await Session.findByIdAndDelete(sessionId);
             
+            // E la togliamo dalle sessioni attive di TUTTI gli utenti
             await User.updateMany(
                 { activeSessions: sessionId },
                 { $pull: { activeSessions: sessionId } }
             );
         } else {
+            // Se è un collaboratore, lo togliamo dalla stanza
             sessione.collaborators = sessione.collaborators.filter(id => id.toString() !== utente._id.toString());
             await sessione.save();
 
+            // E togliamo la stanza dal SUO profilo
             utente.activeSessions = utente.activeSessions.filter(id => id.toString() !== sessionId.toString());
             await utente.save();
         }

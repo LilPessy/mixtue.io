@@ -89,41 +89,80 @@ function MixerRoom() {
 
 
     // EFFETTO SOCKET.IO: Entra nella stanza e ascolta le modifiche
+   // EFFETTO SOCKET.IO: Entra nella stanza e ascolta le modifiche
     useEffect(() => {
         if (!sessionId) return;
 
-        // Diciamo al server: "Ehi, fammi entrare nel canale di questo progetto"
         socket.emit('join-room', sessionId);
 
-        // Ascoltiamo se qualcun altro muove qualcosa
-        socket.on('receive-mixer-update', (data) => {
+        socket.on('receive-mixer-update', async (data) => {
             const { trackId, parametro, valore, freqId } = data;
 
-            // Se l'evento riguarda il volume...
+            // 1. VOLUME
             if (parametro === 'volume') {
                 setVolumes(prev => ({ ...prev, [trackId]: valore }));
+                if (volumesRef.current[trackId]) {
+                    volumesRef.current[trackId].volume.value = valore;
+                }
             }
             
-            // Se l'evento riguarda l'EQ...
+            // 2. EQUALIZZATORE
             if (parametro === 'eq') {
                 setKnobsValues(prev => {
                     const trackKnobs = prev[trackId] ? [...prev[trackId]] : [0, 0, 0];
                     trackKnobs[freqId] = valore;
                     return { ...prev, [trackId]: trackKnobs };
                 });
+                if (eqsRef.current[trackId]) {
+                    if (freqId === 0) eqsRef.current[trackId].high.value = valore;
+                    if (freqId === 1) eqsRef.current[trackId].mid.value = valore;
+                    if (freqId === 2) eqsRef.current[trackId].low.value = valore;
+                }
             }
 
-            // Se l'evento riguarda il Mute...
+            // 3. MUTE (Ora funziona alla perfezione)
             if (parametro === 'mute') {
                 setIsMute(prev => ({ ...prev, [trackId]: valore }));
+                if (volumesRef.current[trackId]) {
+                    volumesRef.current[trackId].mute = valore;
+                }
+            }
+
+            // 4. PLAY / PAUSA
+            if (parametro === 'play') {
+                const player = playersRef.current[trackId];
+                if (player) {
+                    if (valore) {
+                        // Sblocca il motore audio di chi riceve, sennò il browser lo blocca!
+                        await Tone.start(); 
+                        startTimesRef.current[trackId] = Tone.now();
+                        player.start(Tone.now(), offsetsRef.current[trackId]);
+                    } else {
+                        const tempoTrascorso = Tone.now() - (startTimesRef.current[trackId] || 0);
+                        offsetsRef.current[trackId] = (offsetsRef.current[trackId] || 0) + tempoTrascorso;
+                        player.stop();
+                    }
+                    setPlayingStates(prev => ({ ...prev, [trackId]: valore }));
+                }
+            }
+
+            if (parametro === 'new-track') {
+                const tracciaRicevuta = data.track;
+                
+                // Aggiorniamo l'array delle tracce (questo farà partire l'useEffect di Tone.js in automatico!)
+                setTracks(prev => [...prev, tracciaRicevuta]);
+                
+                // Prepariamo i comandi (tutto a zero) per non far crashare l'interfaccia
+                setKnobsValues(prev => ({ ...prev, [tracciaRicevuta._id]: [0, 0, 0] }));
+                setVolumes(prev => ({ ...prev, [tracciaRicevuta._id]: 0 }));
+                setIsMute(prev => ({ ...prev, [tracciaRicevuta._id]: false }));
             }
         });
 
-        // Cleanup: scolleghiamo l'ascoltatore quando usciamo dalla pagina
         return () => {
             socket.off('receive-mixer-update');
         };
-    }, [sessionId]);
+    }, [sessionId]); // Rimosso 'tracks' dalle dipendenze per evitare riconnessioni continue
 
 
     useEffect(() => {
@@ -189,22 +228,36 @@ function MixerRoom() {
 
     const handlePlay = async () => {
         await Tone.start(); 
-        
-        const currentTrackId = tracks[trackCounter]._id;
+        const currentTrackId = tracks[trackCounter]?._id;
+        if (!currentTrackId) return;
+
         const player = playersRef.current[currentTrackId];
-        const isCurrentlyPlaying = playingStates[currentTrackId];
+        const isCurrentlyPlaying = playingStates[currentTrackId] || false;
 
         if (player && isReady) {
-            if (isCurrentlyPlaying) {
+            const newState = !isCurrentlyPlaying; // Se era in play va in pausa, e viceversa
+
+            if (newState) {
+                // Fai partire l'audio
+                startTimesRef.current[currentTrackId] = Tone.now();
+                player.start(Tone.now(), offsetsRef.current[currentTrackId]);
+            } else {
+                // Metti in pausa
                 const tempoTrascorso = Tone.now() - startTimesRef.current[currentTrackId];
                 offsetsRef.current[currentTrackId] += tempoTrascorso;
                 player.stop();
-                setPlayingStates(prev => ({ ...prev, [currentTrackId]: false }));
-            } else {
-                startTimesRef.current[currentTrackId] = Tone.now();
-                player.start(Tone.now(), offsetsRef.current[currentTrackId]);
-                setPlayingStates(prev => ({ ...prev, [currentTrackId]: true }));
             }
+
+            // Aggiorna la grafica
+            setPlayingStates(prev => ({ ...prev, [currentTrackId]: newState }));
+
+            // Spedisci il comando agli amici!
+            socket.emit('send-mixer-update', {
+                sessionId: sessionId,
+                trackId: currentTrackId,
+                parametro: 'play',
+                valore: newState
+            });
         }
     }
 
@@ -220,7 +273,8 @@ function MixerRoom() {
         socket.emit('send-mixer-update', {
             sessionId: sessionId,
             trackId: currentTrackId,
-            parametro: 'freq',
+            parametro: 'eq',
+            freqId: freqId, 
             valore: value
         });
     };
@@ -241,13 +295,24 @@ function MixerRoom() {
         const currentTrackId = tracks[trackCounter]?._id;
         if (!currentTrackId) return;
 
-        setIsMute(prev => {
-            const newMuteState = !prev[currentTrackId];
-            const currentVol = volumesRef.current[currentTrackId];
-            if (currentVol) {
-                currentVol.mute = newMuteState;
-            }
-            return { ...prev, [currentTrackId]: newMuteState };
+        // 1. Capiamo quale sarà il nuovo stato (acceso o spento)
+        const currentState = isMute[currentTrackId] || false;
+        const newMuteState = !currentState;
+
+        // 2. Silenziamo fisicamente Tone.js (Senza aspettare React!)
+        if (volumesRef.current[currentTrackId]) {
+            volumesRef.current[currentTrackId].mute = newMuteState;
+        }
+
+        // 3. Aggiorniamo la grafica del bottone
+        setIsMute(prev => ({ ...prev, [currentTrackId]: newMuteState }));
+
+        // 4. Avvisiamo gli altri
+        socket.emit('send-mixer-update', {
+            sessionId: sessionId,
+            trackId: currentTrackId,
+            parametro: 'mute',
+            valore: newMuteState
         });
     }
 
@@ -277,18 +342,23 @@ function MixerRoom() {
 
             if (response.ok) {
                 const data = await response.json();
-                
-                // La rotta backend ora ti restituisce l'oggetto traccia intero
                 const newTrack = data.track; 
                 
                 setTracks(prev => [...prev, newTrack]);
-                
                 setKnobsValues(prev => ({ ...prev, [newTrack._id]: [0, 0, 0] }));
                 setVolumes(prev => ({ ...prev, [newTrack._id]: 0 }));
                 setIsMute(prev => ({ ...prev, [newTrack._id]: false }));
                 
                 console.log("Traccia caricata con successo:", data.fileName);
                 event.target.value = null; 
+
+                // AGGIUNGI QUESTO BLOCCO: Avvisiamo gli altri della nuova traccia!
+                socket.emit('send-mixer-update', {
+                    sessionId: sessionId,
+                    parametro: 'new-track',
+                    track: newTrack // Passiamo l'intero oggetto traccia appena arrivato dal DB
+                });
+
             } else {
                 console.error("Errore dal server durante il caricamento");
             }

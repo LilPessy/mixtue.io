@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Importiamo il navigatore!
 import './Navbar.css';
+import exitIcon from '../assets/exit.png';
 
 function Navbar({ username, propic }) {
     // Stato per controllare se il menu a tendina è aperto
@@ -56,7 +57,7 @@ function Navbar({ username, propic }) {
                 {menuAperto && (
                     <div className='dropdown-menu'>
                         <button onClick={gestisciLogout} className='logout-btn'>
-                            🚪 Esci
+                            <img src={exitIcon} alt="Exit" style={{ width: '18px', height: '18px' }} /> Esci
                         </button>
                     </div>
                 )}

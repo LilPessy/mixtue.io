@@ -1,35 +1,89 @@
 .card-miei-progetti {
-    width: 200px; /* Scegli la larghezza che preferisci */
-    border-radius: 12px;
-    overflow: hidden; /* FONDAMENTALE: taglia via l'immagine che esce dai bordi arrotondati */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    width: 180px; /* Reso più piccolo in base allo screen */
+    position: relative; /* Necessario per posizionare la X in alto a destra */
+    border-radius: 16px; /* Raggio di curvatura ridotto proporzionalmente */
+    overflow: hidden; /* Taglia via l'immagine che esce dai bordi */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
+    background-color: #7B8BE4; /* Previene la fastidiosa linea bianca sub-pixel impostando lo sfondo uguale alla parte inferiore */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-miei-progetti:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
+.card-immagine-container {
+    width: 100%;
+    height: 100px; /* Immagine ridimensionata proporzionalmente */
 }
 
 .card-immagine {
     width: 100%;
-    height: 120px; /* Altezza fissa per l'immagine */
-    object-fit: cover; /* Evita che il mixer si schiacci o si deformi */
-    display: block; /* Toglie un fastidioso spazio bianco sotto le immagini */
+    height: 100%; 
+    object-fit: cover; 
+    display: block; 
 }
 
 .card-testo-container {
-    background-color: #7B83EB; /* Il viola che hai usato su Figma */
+    background-color: #7B8BE4; /* L'azzurro/lilla della foto */
     color: white;
-    padding: 12px;
-    text-align: left;
+    padding: 6px 8px; /* Padding ridotto al minimo per risparmiare spazio in altezza */
+    text-align: center; /* Testo centrato orizzontalmente */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 48px; /* Altezza fissa molto più bassa per ripristinare le proporzioni originali */
+    box-sizing: border-box;
 }
 
 .card-nome-progetto {
     margin: 0;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 15px; /* Font size scalato */
+    font-weight: 700; /* Bold, ma leggibile */
+    line-height: 1.1;
 }
 
-.card-autore {
-    margin: 4px 0 0 0;
-    font-size: 12px;
-    font-weight: 400;
+.card-proprietario-testo {
+    margin: 2px 0 0 0; /* Margine compresso per non sforare */
+    font-size: 10px; /* Scalato per essere un piccolo sottotitolo */
+    font-weight: 500;
     opacity: 0.9;
+}
+
+/* Pulsante Elimina: X in alto a destra, rimpicciolita in proporzione */
+.card-btn-elimina {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    background-color: rgba(255, 255, 255, 0.95); /* Sfondo bianco semi-opaco */
+    border: none;
+    border-radius: 50%; /* Pulsante rotondo */
+    cursor: pointer;
+    font-size: 0; /* Nasconde l'emoji del cestino 🗑️ dal DOM */
+    color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    z-index: 10;
+}
+
+.card-btn-elimina:hover {
+    background-color: #ffffff;
+    transform: scale(1.1);
+}
+
+/* Creiamo l'icona della "X" usando uno pseudo-elemento */
+.card-btn-elimina::after {
+    content: "\2715"; /* Codice Unicode per la X */
+    font-size: 12px;
+    font-weight: bold;
+    color: #1A115C; /* Blu scuro */
 }

@@ -177,3 +177,19 @@
         padding: 14px;
     }
 }
+
+/* Stili per la sezione dei progetti e i suoi titoli */
+.sezione-miei-progetti {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.sezione-miei-progetti h2 {
+    color: #1A115C;
+    font-size: 24px;
+    font-weight: 800;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    text-align: left;
+}

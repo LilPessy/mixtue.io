@@ -11,6 +11,11 @@ import FreqDisplay from '../components/FreqDisplay'
 import ExitIcon from '../assets/exit.png'
 import playIcon from '../assets/play.png'
 import pauseIcon from '../assets/pause.png'
+import { io } from 'socket.io-client';
+
+// Inizializziamo il socket FUORI dal componente, così non si riconnette
+// ogni volta che React ridisegna la pagina
+const socket = io('http://localhost:3000');
 
 function MixerRoom() {
 
@@ -80,6 +85,44 @@ function MixerRoom() {
         if (sessionId) {
             getCodiceStanza();
         }
+    }, [sessionId]);
+
+
+    // EFFETTO SOCKET.IO: Entra nella stanza e ascolta le modifiche
+    useEffect(() => {
+        if (!sessionId) return;
+
+        // Diciamo al server: "Ehi, fammi entrare nel canale di questo progetto"
+        socket.emit('join-room', sessionId);
+
+        // Ascoltiamo se qualcun altro muove qualcosa
+        socket.on('receive-mixer-update', (data) => {
+            const { trackId, parametro, valore, freqId } = data;
+
+            // Se l'evento riguarda il volume...
+            if (parametro === 'volume') {
+                setVolumes(prev => ({ ...prev, [trackId]: valore }));
+            }
+            
+            // Se l'evento riguarda l'EQ...
+            if (parametro === 'eq') {
+                setKnobsValues(prev => {
+                    const trackKnobs = prev[trackId] ? [...prev[trackId]] : [0, 0, 0];
+                    trackKnobs[freqId] = valore;
+                    return { ...prev, [trackId]: trackKnobs };
+                });
+            }
+
+            // Se l'evento riguarda il Mute...
+            if (parametro === 'mute') {
+                setIsMute(prev => ({ ...prev, [trackId]: valore }));
+            }
+        });
+
+        // Cleanup: scolleghiamo l'ascoltatore quando usciamo dalla pagina
+        return () => {
+            socket.off('receive-mixer-update');
+        };
     }, [sessionId]);
 
 

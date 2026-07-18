@@ -329,10 +329,25 @@ app.delete('/api/sessions/elimina/:id', async (req, res) => {
 // --- GESTIONE SOCKET.IO (REAL-TIME) ---
 
 io.on('connection', (socket) => {
-    console.log(`Un utente si è connesso: ${socket.id}`);
+    console.log(`🔌 Un utente si è connesso: ${socket.id}`);
+
+    // 1. Quando un utente apre un progetto, lo facciamo entrare nella sua "Room"
+    socket.on('join-room', (sessionId) => {
+        socket.join(sessionId);
+        console.log(`Utente ${socket.id} è entrato nella stanza ${sessionId}`);
+    });
+
+    // 2. Quando qualcuno muove un fader o un knob
+    socket.on('send-mixer-update', (data) => {
+        // data conterrà roba tipo: { sessionId, trackId, parametro, valore }
+        
+        // socket.to(stanza).emit manda il pacchetto a TUTTI quelli nella stanza 
+        // TRANNE a chi ha appena mosso il fader (altrimenti il suo fader scatterebbe)
+        socket.to(data.sessionId).emit('receive-mixer-update', data);
+    });
 
     socket.on('disconnect', () => {
-        console.log(`Utente disconnesso: ${socket.id}`);
+        console.log(`❌ Utente disconnesso: ${socket.id}`);
     });
 });
 

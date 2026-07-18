@@ -67,6 +67,22 @@ app.get('/api/test', (req, res) => {
     res.json({ message: "Il backend di Mixtue.io è vivo e vegeto!" });
 });
 
+
+app.get('/api/session/:id', (req,res)=>{
+    try {
+        const sessionId = req.params.id;
+        const sessione = await Session.findById(sessionId);
+        if (!sessione) {
+            return res.status(404).json({ message: "Sessione non trovata" });
+        }
+        res.json({ roomCode: sessione.roomeCode });
+
+    } catch (error) {
+        console.error("Errore nel recupero della sessione:", error);
+        res.status(500).json({ message: "Errore del server durante il recupero del codice" });
+    }
+})
+
 // 1. Importiamo ENTRAMBI i middleware estraendoli dall'oggetto
 const { uploadPropic, uploadTrack } = require('./middlewares/upload');
 
@@ -188,7 +204,7 @@ app.delete('/api/sessions/elimina/:id', async (req, res) => {
         }
 
         const utente = await User.findOne({ username: nomeUtente });
-        const sessione = await Session.findById(sessionId);
+        
 
         if (!utente || !sessione) {
             return res.status(404).json({ error: 'Utente o stanza non trovati' });

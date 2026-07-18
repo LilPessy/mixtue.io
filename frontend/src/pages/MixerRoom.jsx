@@ -217,12 +217,24 @@ function MixerRoom() {
             trackKnobs[freqId] = value;
             return { ...prev, [currentTrackId]: trackKnobs };
         });
+        socket.emit('send-mixer-update', {
+            sessionId: sessionId,
+            trackId: currentTrackId,
+            parametro: 'freq',
+            valore: value
+        });
     };
 
     const handleVolumeChange = (value) => {
         const currentTrackId = tracks[trackCounter]?._id;
         if (!currentTrackId) return;
         setVolumes(prev => ({ ...prev, [currentTrackId]: value }));
+        socket.emit('send-mixer-update', {
+            sessionId: sessionId,
+            trackId: currentTrackId,
+            parametro: 'volume',
+            valore: value
+        });
     };
 
     const handleMute = () => {

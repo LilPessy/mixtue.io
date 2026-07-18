@@ -6,11 +6,9 @@ import InsiemeCards from '../components/InsiemeCards';
 import InsiemeCollaborazioni from '../components/InsiemeCollaborazioni';
 
 function Home() {
-    // SE MANCA QUESTA RIGA, REACT CRASHA!
     const [datiUtente, setDatiUtente] = useState(null);
     const navigate = useNavigate(); 
 
-    // Variabile ultra-sicura per il nome formattato
     const nomeFormattato = datiUtente?.nome 
         ? datiUtente.nome.charAt(0).toUpperCase() + datiUtente.nome.slice(1).toLowerCase()
         : '';
@@ -53,23 +51,53 @@ function Home() {
         fetchUserData();
     }, [navigate]);
 
+    const gestisciEliminazione = async (idProgetto) => {
+        const conferma = window.confirm("Sei sicuro di voler rimuovere questo progetto dalla tua bacheca?");
+        if (!conferma) return;
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/sessions/elimina/${idProgetto}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: datiUtente.username }) 
+            });
+
+            if (response.ok) {
+                setDatiUtente(prev => ({
+                    ...prev,
+                    iTuoiProgetti: prev.iTuoiProgetti.filter(p => p.id !== idProgetto && p._id !== idProgetto),
+                    collaborazioni: prev.collaborazioni.filter(p => p.id !== idProgetto && p._id !== idProgetto)
+                }));
+            } else {
+                window.alert("Si è verificato un problema durante l'eliminazione.");
+            }
+        } catch (errore) {
+            console.error("Errore di rete durante l'eliminazione:", errore);
+        }
+    };
+
     return (
         <section>
-            {/* Passiamo nomeFormattato se esiste, altrimenti l'username */}
             <Navbar username={nomeFormattato || datiUtente?.username} propic={datiUtente?.propic} />
             <MixerActions username={datiUtente?.username || null} />
             
             <div className="sezione-miei-progetti">
                 <h2>I tuoi progetti {datiUtente?.username}</h2>
                 {datiUtente ? (
-                    <InsiemeCards progetti={datiUtente.iTuoiProgetti} />
+                    <InsiemeCards 
+                        progetti={datiUtente.iTuoiProgetti} 
+                        onDelete={gestisciEliminazione} 
+                    />
                 ) : (
                     <p>Caricamento dei progetti in corso...</p>
                 )}
 
                 <h2>{nomeFormattato || datiUtente?.username}, continua a collaborare con: </h2>
                 {datiUtente ? (
-                    <InsiemeCollaborazioni progetti={datiUtente.collaborazioni} />
+                    <InsiemeCollaborazioni 
+                        progetti={datiUtente.collaborazioni} 
+                        onDelete={gestisciEliminazione} 
+                    />
                 ) : (
                     <p>Caricamento delle collaborazioni in corso...</p>
                 )}
@@ -82,5 +110,5 @@ function Home() {
         </section>
     );
 }
-    
+
 export default Home;

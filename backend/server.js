@@ -294,3 +294,50 @@ app.post('/api/sessions/unisciti', async (req, res) => {
         res.status(500).json({ error: 'Errore interno del server' });
     }
 });
+
+// ROTTA PER ELIMINARE O ABBANDONARE UN PROGETTO
+app.delete('/api/sessions/elimina/:id', async (req, res) => {
+    try {
+        const sessionId = req.params.id;
+        const nomeUtente = req.body.username; // Chi sta chiedendo di eliminare?
+
+        if (!nomeUtente) {
+            return res.status(400).json({ error: 'Username mancante' });
+        }
+
+        const utente = await User.findOne({ username: nomeUtente });
+        const sessione = await Session.findById(sessionId);
+
+        if (!utente || !sessione) {
+            return res.status(404).json({ error: 'Utente o stanza non trovati' });
+        }
+
+        // Controlliamo se l'utente che ha cliccato è il proprietario
+        const isOwner = sessione.ownerId.toString() === utente._id.toString();
+
+        if (isOwner) {
+            // SCENARIO 1: È IL PROPRIETARIO -> Distruggiamo l'intera sessione
+            await Session.findByIdAndDelete(sessionId);
+            
+            // La togliamo dalle sessioni attive di tutti gli utenti che ci stavano lavorando
+            await User.updateMany(
+                { activeSessions: sessionId },
+                { $pull: { activeSessions: sessionId } }
+            );
+        } else {
+            // SCENARIO 2: È UN COLLABORATORE -> Esce semplicemente dalla stanza
+            sessione.collaborators = sessione.collaborators.filter(id => id.toString() !== utente._id.toString());
+            await sessione.save();
+
+            // La togliamo solo dalle sue sessioni attive
+            utente.activeSessions = utente.activeSessions.filter(id => id.toString() !== sessionId.toString());
+            await utente.save();
+        }
+
+        res.status(200).json({ message: 'Progetto rimosso con successo dalla tua bacheca!' });
+
+    } catch (error) {
+        console.error('Errore durante l\'eliminazione della sessione:', error);
+        res.status(500).json({ error: 'Errore interno del server' });
+    }
+});

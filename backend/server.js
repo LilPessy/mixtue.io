@@ -18,10 +18,14 @@ const authRoutes = require('./routes/auth'); // importiamo il file delle rotte
 
 // Middleware fondamentali
 // Permette a React (porta 5173) di fare richieste a Express (porta 3000)
+const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173/';
+
 app.use(cors({
-    origin: 'http://localhost:5173', // Deve essere l'URL esatto di React (senza lo slash finale)
-    credentials: true // FONDAMENTALE PER I COOKIE!
+    origin: frontendURL, 
+    credentials: true 
 }));
+
+
 app.use(express.json()); // Permette di leggere i dati in formato JSON dal frontend
 app.use(cookieParser()); // Permette di leggere e tradurre i cookie che il browser invia al server
 app.use('/api/auth', authRoutes);
@@ -45,7 +49,7 @@ const server = http.createServer(app);
 // Inizializzazione di Socket.io
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173", // L'indirizzo del tuo frontend Vite
+        origin: frontendURL,
         methods: ["GET", "POST"]
     }
 });

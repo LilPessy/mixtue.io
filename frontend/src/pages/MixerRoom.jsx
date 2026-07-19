@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom'; // Aggiunto useNavigate!
 import './MixerRoom.css'
 import * as Tone from 'tone'
 import nextIcon from '../assets/next.png'
@@ -14,23 +14,23 @@ import pauseIcon from '../assets/pause.png'
 import { io } from 'socket.io-client';
 import toWav from 'audiobuffer-to-wav';
 
-// ... (dentro il componente MixerRoom, vicino agli altri useState)
+// 1. VARIABILE MAGICA PER IL DEPLOY (Dichiarata fuori per passarla subito al socket)
+const backendURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
-
-// Inizializziamo il socket FUORI dal componente, così non si riconnette
-// ogni volta che React ridisegna la pagina
-const socket = io('http://localhost:3000');
+// Inizializziamo il socket FUORI dal componente con l'URL dinamico
+const socket = io(backendURL);
 
 function MixerRoom() {
 
     const { sessionId } = useParams();
+    const navigate = useNavigate(); // Inizializziamo useNavigate per il tasto uscita
+    
     const [roomCode, setRoomCode] = useState('');
     const [roomName, setRoomName] = useState('');
     const [tracks, setTracks] = useState([]);
     const [isExporting, setIsExporting] = useState(false);
     const [timeLeft, setTimeLeft] = useState(null);
 
-    // Trasformiamo questi stati da array a oggetti (Mappe) che usano il VERO _id di MongoDB
     const [knobsValues, setKnobsValues] = useState({});
     const [volumes, setVolumes] = useState({});
     const [isMute, setIsMute] = useState({});
@@ -46,7 +46,6 @@ function MixerRoom() {
     const volumesRef = useRef({});
     const recorderRef = useRef(null);
 
-    // Inizializziamo il registratore all'avvio e lo attacchiamo all'uscita Master
     useEffect(() => {
         recorderRef.current = new Tone.Recorder();
         Tone.Destination.connect(recorderRef.current);
@@ -55,7 +54,8 @@ function MixerRoom() {
     useEffect(() => {
         const getCodiceStanza = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/api/session/${sessionId}`, {
+                // 2. FETCH AGGIORNATA
+                const response = await fetch(`${backendURL}/api/session/${sessionId}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -67,20 +67,17 @@ function MixerRoom() {
                     const fetchedTracks = data.tracks || [];
                     setTracks(fetchedTracks);
 
-                    // Pre-inizializziamo gli stati basandoci sui veri _id dal DB
                     const initKnobs = {};
                     const initVols = {};
                     const initMute = {};
                     
                     fetchedTracks.forEach(t => {
-                        // Se la traccia ha uno stato salvato per l'EQ, lo carichiamo, altrimenti [0, 0, 0]
                         if (t.state && t.state.eq) {
                             initKnobs[t._id] = [t.state.eq.high, t.state.eq.mid, t.state.eq.low];
                         } else {
                             initKnobs[t._id] = [0, 0, 0];
                         }
 
-                        // Carichiamo volume e mute salvati (con l'operatore ?? che mette 0/false se i dati mancano)
                         initVols[t._id] = t.state?.volume ?? 0;
                         initMute[t._id] = t.state?.isMuted ?? false;
                     });
@@ -101,8 +98,6 @@ function MixerRoom() {
     }, [sessionId]);
 
 
-    // EFFETTO SOCKET.IO: Entra nella stanza e ascolta le modifiche
-   // EFFETTO SOCKET.IO: Entra nella stanza e ascolta le modifiche
     useEffect(() => {
         if (!sessionId) return;
 
@@ -111,7 +106,6 @@ function MixerRoom() {
         socket.on('receive-mixer-update', async (data) => {
             const { trackId, parametro, valore, freqId } = data;
 
-            // 1. VOLUME
             if (parametro === 'volume') {
                 setVolumes(prev => ({ ...prev, [trackId]: valore }));
                 if (volumesRef.current[trackId]) {
@@ -119,7 +113,6 @@ function MixerRoom() {
                 }
             }
             
-            // 2. EQUALIZZATORE
             if (parametro === 'eq') {
                 setKnobsValues(prev => {
                     const trackKnobs = prev[trackId] ? [...prev[trackId]] : [0, 0, 0];
@@ -133,7 +126,6 @@ function MixerRoom() {
                 }
             }
 
-            // 3. MUTE (Ora funziona alla perfezione)
             if (parametro === 'mute') {
                 setIsMute(prev => ({ ...prev, [trackId]: valore }));
                 if (volumesRef.current[trackId]) {
@@ -141,12 +133,10 @@ function MixerRoom() {
                 }
             }
 
-            // 4. PLAY / PAUSA
             if (parametro === 'play') {
                 const player = playersRef.current[trackId];
                 if (player) {
                     if (valore) {
-                        // Sblocca il motore audio di chi riceve, sennò il browser lo blocca!
                         await Tone.start(); 
                         startTimesRef.current[trackId] = Tone.now();
                         player.start(Tone.now(), offsetsRef.current[trackId]);
@@ -161,11 +151,7 @@ function MixerRoom() {
 
             if (parametro === 'new-track') {
                 const tracciaRicevuta = data.track;
-                
-                // Aggiorniamo l'array delle tracce (questo farà partire l'useEffect di Tone.js in automatico!)
                 setTracks(prev => [...prev, tracciaRicevuta]);
-                
-                // Prepariamo i comandi (tutto a zero) per non far crashare l'interfaccia
                 setKnobsValues(prev => ({ ...prev, [tracciaRicevuta._id]: [0, 0, 0] }));
                 setVolumes(prev => ({ ...prev, [tracciaRicevuta._id]: 0 }));
                 setIsMute(prev => ({ ...prev, [tracciaRicevuta._id]: false }));
@@ -175,25 +161,29 @@ function MixerRoom() {
         return () => {
             socket.off('receive-mixer-update');
         };
-    }, [sessionId]); // Rimosso 'tracks' dalle dipendenze per evitare riconnessioni continue
+    }, [sessionId]); 
 
 
     useEffect(() => {
         tracks.forEach((track) => {
-            // Se il player esiste già, non ricrearlo (evita glitch se aggiungi tracce)
             if (playersRef.current[track._id]) return;
 
+            // 3. FIX CLOUDINARY URL: Se l'URL inizia con http (es. cloudinary), usalo direttamente. 
+            // Altrimenti, attaccaci l'indirizzo del backend (per le vecchie tracce in public/tracks)
+            const trackAudioUrl = track.fileUrl.startsWith('http') 
+                ? track.fileUrl 
+                : `${backendURL}${track.fileUrl.startsWith('/') ? '' : '/'}${track.fileUrl}`;
+
             const player = new Tone.Player({
-                // Usiamo fileUrl (struttura DB) e aggiungiamo lo slash iniziale
-                url: `http://localhost:3000${track.fileUrl.startsWith('/') ? '' : '/'}${track.fileUrl}`, 
+                url: trackAudioUrl, 
                 onload: () => setIsReady(true)
             });
+            
             const eq = new Tone.EQ3(0, 0, 0); 
             const vol = new Tone.Volume(0);   
 
             player.chain(eq, vol, Tone.Destination);
 
-            // Salviamo tutto usando l'_id come chiave
             playersRef.current[track._id] = player;
             eqsRef.current[track._id] = eq;
             volumesRef.current[track._id] = vol;
@@ -201,14 +191,9 @@ function MixerRoom() {
             startTimesRef.current[track._id] = 0;
         });
 
-        // Cleanup
-        return () => {
-            // Qui andrebbe fatta una pulizia più mirata al component unmount, 
-            // ma per ora evitiamo il dispose generale per non spaccare le tracce esistenti
-        }
+        return () => {}
     }, [tracks]); 
 
-    // Aggiornamento EQ e Volumi in tempo reale
     useEffect(() => {
         if (tracks.length === 0 || !tracks[trackCounter]) return;
         
@@ -248,23 +233,19 @@ function MixerRoom() {
         const isCurrentlyPlaying = playingStates[currentTrackId] || false;
 
         if (player && isReady) {
-            const newState = !isCurrentlyPlaying; // Se era in play va in pausa, e viceversa
+            const newState = !isCurrentlyPlaying; 
 
             if (newState) {
-                // Fai partire l'audio
                 startTimesRef.current[currentTrackId] = Tone.now();
                 player.start(Tone.now(), offsetsRef.current[currentTrackId]);
             } else {
-                // Metti in pausa
                 const tempoTrascorso = Tone.now() - startTimesRef.current[currentTrackId];
                 offsetsRef.current[currentTrackId] += tempoTrascorso;
                 player.stop();
             }
 
-            // Aggiorna la grafica
             setPlayingStates(prev => ({ ...prev, [currentTrackId]: newState }));
 
-            // Spedisci il comando agli amici!
             socket.emit('send-mixer-update', {
                 sessionId: sessionId,
                 trackId: currentTrackId,
@@ -308,19 +289,15 @@ function MixerRoom() {
         const currentTrackId = tracks[trackCounter]?._id;
         if (!currentTrackId) return;
 
-        // 1. Capiamo quale sarà il nuovo stato (acceso o spento)
         const currentState = isMute[currentTrackId] || false;
         const newMuteState = !currentState;
 
-        // 2. Silenziamo fisicamente Tone.js (Senza aspettare React!)
         if (volumesRef.current[currentTrackId]) {
             volumesRef.current[currentTrackId].mute = newMuteState;
         }
 
-        // 3. Aggiorniamo la grafica del bottone
         setIsMute(prev => ({ ...prev, [currentTrackId]: newMuteState }));
 
-        // 4. Avvisiamo gli altri
         socket.emit('send-mixer-update', {
             sessionId: sessionId,
             trackId: currentTrackId,
@@ -328,8 +305,6 @@ function MixerRoom() {
             valore: newMuteState
         });
     }
-
-    
 
     const copyOnClick = (e) => {
         const code = e.target.innerHTML;
@@ -348,7 +323,8 @@ function MixerRoom() {
         formData.append("sessionId", sessionId);
 
         try {
-            const response = await fetch("http://localhost:3000/api/upload/track", {
+            // 4. FETCH AGGIORNATA
+            const response = await fetch(`${backendURL}/api/upload/track`, {
                 method: "POST",
                 body: formData,
             });
@@ -365,11 +341,10 @@ function MixerRoom() {
                 console.log("Traccia caricata con successo:", data.fileName);
                 event.target.value = null; 
 
-                // AGGIUNGI QUESTO BLOCCO: Avvisiamo gli altri della nuova traccia!
                 socket.emit('send-mixer-update', {
                     sessionId: sessionId,
                     parametro: 'new-track',
-                    track: newTrack // Passiamo l'intero oggetto traccia appena arrivato dal DB
+                    track: newTrack 
                 });
 
             } else {
@@ -381,46 +356,46 @@ function MixerRoom() {
     };
 
     const salvaProgettoIntero = async () => {
-    // 1. Creiamo un array mappando le tracce correnti e assemblando i valori dai vari stati
-    const payload = tracks.map(t => {
-        const tId = t._id;
-        const tracciaKnobs = knobsValues[tId] || [0, 0, 0];
-        
-        return {
-            trackId: tId,
-            volume: volumes[tId] ?? 0,
-            isMuted: isMute[tId] ?? false,
-            eq: {
-                high: tracciaKnobs[0],
-                mid: tracciaKnobs[1],
-                low: tracciaKnobs[2]
-            }
-        };
-    });
-
-    // 2. Spediamo l'array gigante al backend
-    try {
-        const response = await fetch(`http://localhost:3000/api/session/${sessionId}/state/bulk`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
+        const payload = tracks.map(t => {
+            const tId = t._id;
+            const tracciaKnobs = knobsValues[tId] || [0, 0, 0];
+            
+            return {
+                trackId: tId,
+                volume: volumes[tId] ?? 0,
+                isMuted: isMute[tId] ?? false,
+                eq: {
+                    high: tracciaKnobs[0],
+                    mid: tracciaKnobs[1],
+                    low: tracciaKnobs[2]
+                }
+            };
         });
 
-        if (response.ok) {
-            alert("Progetto salvato con successo! 💾");
-        } else {
-            console.error("Errore durante il salvataggio del mixer.");
-        }
-    } catch (error) {
-        console.error("Errore di rete durante il salvataggio:", error);
-    }
-};
+        try {
+            // 5. FETCH AGGIORNATA
+            const response = await fetch(`${backendURL}/api/session/${sessionId}/state/bulk`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
 
-const handelClick = async () => {
-        await salvaProgettoIntero()
-        window.location.href = "http://localhost:5173/";
+            if (response.ok) {
+                alert("Progetto salvato con successo! 💾");
+            } else {
+                console.error("Errore durante il salvataggio del mixer.");
+            }
+        } catch (error) {
+            console.error("Errore di rete durante il salvataggio:", error);
+        }
+    };
+
+    const handelClick = async () => {
+        await salvaProgettoIntero();
+        // 6. SOSTITUITO IL VECCHIO WINDOW.LOCATION CON REACT ROUTER
+        navigate('/'); 
     }
 
     const handleExport = async () => {
@@ -443,9 +418,8 @@ const handelClick = async () => {
         }
 
         setIsExporting(true);
-        setTimeLeft(durataScelta); // Impostiamo i secondi di partenza
+        setTimeLeft(durataScelta); 
 
-        // Inizializziamo la variabile dell'intervallo fuori dal try così possiamo pulirla anche in caso di errore
         let intervalId = null; 
 
         try {
@@ -454,19 +428,16 @@ const handelClick = async () => {
 
             recorderRef.current.start();
 
-
-            // FACCIAMO PARTIRE IL CONTO ALLA ROVESCIA
             intervalId = setInterval(() => {
                 setTimeLeft(prev => {
                     if (prev <= 1) {
-                        clearInterval(intervalId); // Fermiamo il loop quando arriva a 0
+                        clearInterval(intervalId); 
                         return 0;
                     }
                     return prev - 1;
                 });
             }, 1000);
 
-            // Aspettiamo la fine della registrazione
             await new Promise(resolve => setTimeout(resolve, durataScelta * 1000));
 
             const recordingBlob = await recorderRef.current.stop();
@@ -488,15 +459,12 @@ const handelClick = async () => {
             console.error("Errore durante la registrazione:", error);
             alert("C'è stato un problema durante l'esportazione.");
         } finally {
-            // PULIZIA FINALE: Resettiamo tutto a prescindere da come è andata
             if (intervalId) clearInterval(intervalId);
             setIsExporting(false);
             setTimeLeft(null);
         }
     };
 
-    // --- PROTEZIONE RENDER ---
-    // Se non ci sono tracce, peschiamo valori finti per non rompere il JSX
     const currentTrackId = tracks[trackCounter]?._id || null;
     const currentAudioSource = currentTrackId ? playersRef.current[currentTrackId] : null;
     const currentKnobs = currentTrackId ? (knobsValues[currentTrackId] || [0, 0, 0]) : [0, 0, 0];
@@ -517,7 +485,6 @@ const handelClick = async () => {
                 </div>
             </div>
 
-            {/* SE LA STANZA È VUOTA, MOSTRA UN MESSAGGIO DIVERSO */}
             {tracks.length === 0 ? (
                 <div style={{ textAlign: 'center', marginTop: '50px', color: 'white' }}>
                     <h2>Nessuna traccia presente</h2>

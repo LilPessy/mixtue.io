@@ -1,22 +1,26 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importiamo il navigatore!
+import { useNavigate } from 'react-router-dom'; 
 import './Navbar.css';
 import exitIcon from '../assets/exit.png';
 
+// 1. Variabile magica per il deploy
+const backendURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
 function Navbar({ username, propic }) {
-    // Stato per controllare se il menu a tendina è aperto
     const [menuAperto, setMenuAperto] = useState(false);
     const navigate = useNavigate();
 
-    const url = propic ? "http://localhost:3000" + propic : null;
+    // 2. Controllo dinamico per Cloudinary o percorso locale
+    let url = null;
+    if (propic) {
+        url = propic.startsWith('http') 
+            ? propic 
+            : `${backendURL}${propic.startsWith('/') ? '' : '/'}${propic}`;
+    }
 
-    // 1. Otteniamo l'ora attuale
     const oraAttuale = new Date().getHours();
-
-    // 2. Prepariamo la variabile per il saluto
     let saluto = "Buongiorno"; 
 
-    // 3. Cambiamo il saluto in base alla fascia oraria
     if (oraAttuale >= 13 && oraAttuale < 18) {
         saluto = "Buon pomeriggio";
     } else if (oraAttuale >= 18 && oraAttuale < 23) {
@@ -25,16 +29,12 @@ function Navbar({ username, propic }) {
         saluto = "Buonanotte"; 
     }
 
-    // Funzione per aprire/chiudere la tendina
     const toggleMenu = () => {
         setMenuAperto(!menuAperto);
     };
 
-    // Funzione per il Logout
     const gestisciLogout = () => {
-        // Eliminiamo il token di sicurezza
         localStorage.removeItem('accessToken');
-        // Cacciamo l'utente al login!
         navigate('/login');
     };
 
@@ -45,7 +45,6 @@ function Navbar({ username, propic }) {
                 <h2>{username}</h2>
             </div>
 
-            {/* Aggiungiamo l'onClick e position: relative per posizionare la tendina sotto l'immagine */}
             <div className='Profile' onClick={toggleMenu} style={{ cursor: 'pointer', position: 'relative' }}>
                 {propic ? (
                     <img className='profile-pic' src={url} alt="Immagine profilo" />
@@ -53,7 +52,6 @@ function Navbar({ username, propic }) {
                     <div className='placeholder'>Ospite</div>
                 )}
 
-                {/* IL MENU A TENDINA CHE APPARE QUANDO CLICCHI */}
                 {menuAperto && (
                     <div className='dropdown-menu'>
                         <button onClick={gestisciLogout} className='logout-btn'>

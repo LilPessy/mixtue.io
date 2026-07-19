@@ -6,8 +6,11 @@ function MixerActions({ username }) {
     const [mostraInput, setMostraInput] = useState(false);
     const [codiceStanza, setCodiceStanza] = useState('');
     const navigate = useNavigate();
+    
+    // 1. LA VARIABILE MAGICA PER IL DEPLOY
+    const backendURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
-    // 1. GESTIONE CREAZIONE NUOVO MIXER
+    // 2. GESTIONE CREAZIONE NUOVO MIXER
     const gestisciNuovoMixer = async () => {
         if (!username) {
             console.error("Aspetta, utente non ancora caricato!");
@@ -22,7 +25,8 @@ function MixerActions({ username }) {
         }
 
         try {
-            const response = await fetch('http://localhost:3000/api/sessions/crea', {
+            // AGGIORNATA CON backendURL
+            const response = await fetch(`${backendURL}/api/sessions/crea`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: username, projectName: nomeProgettoScelto }) 
@@ -39,12 +43,12 @@ function MixerActions({ username }) {
         }
     };
 
-    // 2. GESTIONE APERTURA/CHIUSURA BARRA COLLABORA
+    // 3. GESTIONE APERTURA/CHIUSURA BARRA COLLABORA
     const gestisciClickCollabora = () => {
         setMostraInput(!mostraInput);
     };
 
-    // 3. GESTIONE INGRESSO NELLA STANZA (LA NUOVA FUNZIONE!)
+    // 4. GESTIONE INGRESSO NELLA STANZA
     const gestisciEntra = async () => {
         // Controlli di sicurezza base
         if (!username) {
@@ -57,25 +61,23 @@ function MixerActions({ username }) {
         }
 
         try {
-            // Facciamo la chiamata alla nuova rotta Node.js
-            const response = await fetch('http://localhost:3000/api/sessions/unisciti', {
+            // AGGIORNATA CON backendURL
+            const response = await fetch(`${backendURL}/api/sessions/unisciti`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
-                    roomCode: codiceStanza, // Il codice digitato nell'input
-                    username: username      // L'utente attuale
+                    roomCode: codiceStanza, 
+                    username: username      
                 })
             });
 
             if (response.ok) {
-                // Se tutto va bene, prendiamo l'ID della stanza e navighiamo!
                 const data = await response.json();
                 console.log("Unito con successo! Vado al mixer:", data.sessionId);
                 navigate(`/mixer/${data.sessionId}`);
             } else {
-                // Se il backend ci blocca (es. "Sei già proprietario"), scatta l'alert!
                 const errorData = await response.json();
                 window.alert(errorData.error || "Impossibile unirsi alla stanza.");
             }
@@ -110,7 +112,6 @@ function MixerActions({ username }) {
                         value={codiceStanza}
                         onChange={(e) => setCodiceStanza(e.target.value)} 
                     />
-                    {/* Il tasto ora lancia la funzione gestisciEntra! */}
                     <button className="entra-btn" onClick={gestisciEntra}>
                         Entra
                     </button>

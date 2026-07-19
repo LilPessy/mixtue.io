@@ -1,13 +1,12 @@
 const express = require('express');
-const router = express.Router(); // ✅ Usiamo il router
+const router = express.Router(); 
 const bcrypt = require('bcryptjs');
-const User = require('../models/User'); // ✅ U maiuscola per sicurezza!
+const User = require('../models/User'); 
 const jwt = require('jsonwebtoken');
 
 const {uploadPropic} = require('../middlewares/upload');
 
 const verifyToken = (req, res, next) => {
-  // Il token arriva nell'header "Authorization" come "Bearer xyz123..."
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -15,13 +14,11 @@ const verifyToken = (req, res, next) => {
 
   jwt.verify(token, process.env.ACCESS_SECRET, (err, decoded) => {
     if (err) return res.status(403).json({ message: "Token non valido o scaduto" });
-    req.userId = decoded.id; // Salviamo l'ID estratto dal token
-    next(); // Passiamo alla rotta vera e propria
+    req.userId = decoded.id; 
+    next(); 
   });
 };
 
-// ✅ Cambiato app.post in router.post
-// ✅ Aggiunto upload.single('propic') come middleware per intercettare l'immagine
 router.post('/register', uploadPropic.single('propic'), async (req, res) => {
   try {
     const { email, password, username, nome, cognome } = req.body;
@@ -50,15 +47,13 @@ router.post('/register', uploadPropic.single('propic'), async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     
-    // ✅ Gestione corretta dell'immagine profilo
-    let immagineProfilo = '/public/propic/default.jpg'; // Immagine di base se non ne caricano una
+    let immagineProfilo = '/public/propic/default.jpg'; 
     
     if (req.file) {
-      // Se Multer ha intercettato un file, usiamo il suo nome
-      immagineProfilo = '/public/propic/' + req.file.filename; 
+      // MODIFICA 1: Salviamo l'URL sicuro generato da Cloudinary!
+      immagineProfilo = req.file.path; 
     }
 
-    // ✅ Aggiunto il campo propic alla creazione dell'utente
     const newUser = new User({ 
       nome: nome,
       cognome: cognome,
@@ -72,40 +67,35 @@ router.post('/register', uploadPropic.single('propic'), async (req, res) => {
 
     res.status(201).json({ message: "Utente creato con successo" });
   } catch (error) {
-    console.error(error); // Utile per capire cosa va storto nel terminale
+    console.error(error); 
     res.status(500).json({ message: "Errore del server" });
   }
 });
 
-// ✅ Cambiato app.post in router.post
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // 1. Cerchiamo l'utente
     const user = await User.findOne({ username: username });
     if (!user) return res.status(400).json({ message: "Utente non trovato" });
 
-    // 2. Controlliamo la password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(400).json({ message: "Password errata" });
 
-    // 3. ECCO LE DUE RIGHE CHE ERANO SPARITE: Generiamo i token
     const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_SECRET, { expiresIn: '15m' });
     const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_SECRET, { expiresIn: '7d' });
 
-    // 4. Salviamo il refresh token nel DB per questo utente
     user.refreshToken = refreshToken;
     await user.save();
 
-    // 5. Inviamo il cookie in modo sicuro al browser
+    // MODIFICA 2: Impostazioni Cookie essenziali per far parlare Vercel e Render
     res.cookie('jwt', refreshToken, { 
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', 
+      secure: true, 
+      sameSite: 'none', 
       maxAge: 7 * 24 * 60 * 60 * 1000 
     });
 
-    // 6. Rispondiamo a React dicendo che è andato tutto bene
     res.json({ accessToken: accessToken });
   } catch (error) {
     console.error("Errore nel login:", error);
@@ -113,7 +103,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// ✅ Cambiato app.get in router.get
 router.get('/refresh', async (req, res) => {
   try {
     const cookies = req.cookies;
@@ -136,10 +125,8 @@ router.get('/refresh', async (req, res) => {
   }
 });
 
-// La rotta vera e propria (es. in auth.js o un nuovo routes/user.js)
 router.get('/me', verifyToken, async (req, res) => {
   try {
-        // 1. Usiamo req.userId (dal token) invece del nome hardcodato!
         const utenteTrovato = await User.findById(req.userId).populate({
             path: 'activeSessions',
             populate: {
@@ -156,7 +143,6 @@ router.get('/me', verifyToken, async (req, res) => {
         const iTuoiProgetti = [];
         const collaborazioni = [];
 
-        // 2. La tua logica di smistamento (identica a prima, ma applicata all'utente reale)
         if (utenteTrovato.activeSessions && utenteTrovato.activeSessions.length > 0) {
             utenteTrovato.activeSessions.forEach(sessione => {
                 if (!sessione.ownerId) return; 
@@ -179,7 +165,6 @@ router.get('/me', verifyToken, async (req, res) => {
             });
         }
 
-        // 3. Spediamo il pacchetto a React
         res.json({
             username: utenteTrovato.username,
             nome: utenteTrovato.nome,

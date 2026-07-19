@@ -12,9 +12,13 @@ const Login = () => {
   // Inizializziamo la navigazione
   const navigate = useNavigate();
 
+  // 1. ECCO LA VARIABILE MAGICA PER IL DEPLOY
+  const backendURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      // 2. SOSTITUITO LOCALHOST CON LA VARIABILE DINAMICA
+      const response = await fetch(`${backendURL}/api/auth/login`, {
         method: 'POST',
         credentials: 'include',
         headers: {

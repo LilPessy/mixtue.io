@@ -9,6 +9,9 @@ import './Home.css';
 function Home() {
     const [datiUtente, setDatiUtente] = useState(null);
     const navigate = useNavigate(); 
+    
+    // 1. ECCO LA VARIABILE MAGICA
+    const backendURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
     const nomeFormattato = datiUtente?.nome 
         ? datiUtente.nome.charAt(0).toUpperCase() + datiUtente.nome.slice(1).toLowerCase()
@@ -24,7 +27,8 @@ function Home() {
             }
 
             try {
-                const response = await fetch('http://localhost:3000/api/auth/me', {
+                // 2. AGGIORNATA LA FETCH DEL PROFILO
+                const response = await fetch(`${backendURL}/api/auth/me`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -50,14 +54,15 @@ function Home() {
         };
 
         fetchUserData();
-    }, [navigate]);
+    }, [navigate, backendURL]); // Aggiunto backendURL alle dipendenze per sicurezza
 
     const gestisciEliminazione = async (idProgetto) => {
         const conferma = window.confirm("Sei sicuro di voler rimuovere questo progetto dalla tua bacheca?");
         if (!conferma) return;
 
         try {
-            const response = await fetch(`http://localhost:3000/api/sessions/elimina/${idProgetto}`, {
+            // 3. AGGIORNATA LA FETCH DI ELIMINAZIONE
+            const response = await fetch(`${backendURL}/api/sessions/elimina/${idProgetto}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: datiUtente.username }) 

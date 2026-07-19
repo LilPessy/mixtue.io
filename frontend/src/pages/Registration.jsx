@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom'; // 1. Importato useNavigate!
 import FormField from '../components/FormField';
 import Button from '../components/Button';
 import './Registration.css';
 import logo from '../assets/logo.png';
-import { Link } from 'react-router-dom';
 
 const Registration = () => {
-  // 1. Gli stati vanno dentro il componente
   const [nome, setNome] = useState('');
   const [cognome, setCognome] = useState('');
   const [username, setUsername] = useState('');
@@ -15,7 +14,10 @@ const Registration = () => {
   const [confermaPassword, setConfermaPassword] = useState('');
   const [propic, setPropic] = useState(null);
 
-  // 2. Anche la funzione va DENTRO il componente, prima del return
+  // 2. Inizializzati navigate e backendURL
+  const navigate = useNavigate(); 
+  const backendURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
   const handleRegister = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -39,17 +41,18 @@ const Registration = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/register', {
+      // 3. Sostituito localhost con backendURL dinamico
+      const response = await fetch(`${backendURL}/api/auth/register`, {
         method: 'POST',
-        body: formData, // Multer nel backend intercetta multipart/form-data
+        body: formData, 
       });
 
       const data = await response.json();
 
       if (response.ok) {
         alert("Registrazione completata con successo! Ora puoi effettuare il login.");
-        window.location.href = "http://localhost:5173/login"
-        // Volendo qui potremmo svuotare i campi o reindirizzare l'utente
+        // 4. Usiamo navigate per spostarci senza ricaricare la pagina o hardcodare porte!
+        navigate('/login'); 
       } else {
         alert(data.message || "Errore durante la registrazione");
       }
@@ -58,15 +61,14 @@ const Registration = () => {
       alert("Impossibile connettersi al server. Assicurati che il backend sia acceso.");
     }
   };
+
   return (
     <div className="registration-container">
       
-      {/* Forme geometriche di sfondo */}
       <div className="bg-shape shape-top-left"></div>
       <div className="bg-shape shape-top-right"></div>
       <div className="bg-shape shape-mid-left"></div>
       
-      {/* Sezione Intestazione con Logo (ricreata in CSS o con un'immagine) */}
       <div className="header-section">
         <div className="logo-circle">
           <div className="logo-square">
@@ -78,7 +80,6 @@ const Registration = () => {
 
       <h1 className="main-title">Crea il tuo Account</h1>
 
-      {/* Contenitore dei campi */}
       <div className="form-container">
         <FormField
           label="Nome"
@@ -125,16 +126,15 @@ const Registration = () => {
           onChange={(e) => setConfermaPassword(e.target.value)}
         />
 
+        {/* 5. Tolto il value forzato per evitare bug di React */}
         <FormField
           label="Immagine Profilo"
           type="file"
           accept="image/*"
-          value={propic ? propic.name : ""}
           onChange={(e) => setPropic(e.target.files[0])}
         />
       </div>
 
-      {/* 3. Utilizzo del tuo componente Button custom */}
       <div className="button-container">
         <Button 
           text="Crea Account" 
@@ -142,14 +142,12 @@ const Registration = () => {
         />
       </div>
 
-      {/* Link finale */}
       <div className="login-link-container">
-        <Link to="/login" className="login-link">Ho già un account</Link>
+        <Link to="/login" className="login-link">Ho giÃ  un account</Link>
       </div>
 
     </div>
   );
-}; // <-- Chiusura corretta del componente Registration
+}; 
 
-// 4. Esportazione fondamentale per il Router
 export default Registration;

@@ -23,6 +23,8 @@ const verifyToken = (req, res, next) => {
  * @swagger
  * /api/auth/register:
  *   post:
+ *     tags:
+ *       - Autenticazione
  *     summary: Registra un nuovo utente
  *     requestBody:
  *       required: true
@@ -109,6 +111,8 @@ router.post('/register', uploadPropic.single('propic'), async (req, res) => {
  * @swagger
  * /api/auth/login:
  *   post:
+ *     tags:
+ *       - Autenticazione
  *     summary: Effettua il login
  *     requestBody:
  *       required: true
@@ -164,6 +168,8 @@ router.post('/login', async (req, res) => {
  * @swagger
  * /api/auth/refresh:
  *   get:
+ *     tags:
+ *       - Autenticazione
  *     summary: Aggiorna l'access token usando il refresh token nei cookie
  *     responses:
  *       200:
@@ -201,6 +207,8 @@ router.get('/refresh', async (req, res) => {
  * @swagger
  * /api/auth/me:
  *   get:
+ *     tags:
+ *       - Autenticazione
  *     summary: Recupera i dati dell'utente loggato
  *     security:
  *       - bearerAuth: []

@@ -73,6 +73,8 @@ const ottieniImmagine = (utente) => {
  * @swagger
  * /api/test:
  *   get:
+ *     tags:
+ *       - Varie
  *     summary: Verifica che il backend sia attivo
  *     responses:
  *       200:
@@ -86,6 +88,8 @@ app.get('/api/test', (req, res) => {
  * @swagger
  * /api/session/{id}:
  *   get:
+ *     tags:
+ *       - Sessioni
  *     summary: Recupera i dati di una sessione specifica
  *     parameters:
  *       - in: path
@@ -130,6 +134,8 @@ const { uploadPropic, uploadTrack } = require('./middlewares/upload');
  * @swagger
  * /api/upload/propic:
  *   post:
+ *     tags:
+ *       - Upload & Media
  *     summary: Carica l'immagine del profilo utente
  *     requestBody:
  *       required: true
@@ -163,6 +169,8 @@ app.post('/api/upload/propic', uploadPropic.single('image'), (req, res) => {
  * @swagger
  * /api/upload/track:
  *   post:
+ *     tags:
+ *       - Upload & Media
  *     summary: Carica una traccia audio nella sessione
  *     requestBody:
  *       required: true
@@ -232,6 +240,8 @@ app.post('/api/upload/track', uploadTrack.single('audioFile'), async (req, res) 
  * @swagger
  * /api/session/{sessionId}/state/bulk:
  *   put:
+ *     tags:
+ *       - Sessioni
  *     summary: Aggiorna lo stato di più tracce in bulk
  *     parameters:
  *       - in: path
@@ -306,6 +316,8 @@ app.put('/api/session/:sessionId/state/bulk', async (req, res) => {
  * @swagger
  * /api/sessions/crea:
  *   post:
+ *     tags:
+ *       - Sessioni
  *     summary: Crea una nuova sessione musicale
  *     requestBody:
  *       required: true
@@ -367,6 +379,8 @@ app.post('/api/sessions/crea', async (req, res) => {
  * @swagger
  * /api/sessions/unisciti:
  *   post:
+ *     tags:
+ *       - Sessioni
  *     summary: Unisciti a una sessione esistente
  *     requestBody:
  *       required: true
@@ -442,6 +456,8 @@ app.post('/api/sessions/unisciti', async (req, res) => {
  * @swagger
  * /api/sessions/elimina/{id}:
  *   delete:
+ *     tags:
+ *       - Sessioni
  *     summary: Elimina o abbandona una sessione
  *     parameters:
  *       - in: path

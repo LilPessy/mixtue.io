@@ -14,7 +14,7 @@ const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-const User = require('./models/User'); 
+const User = require('./models/user'); 
 const Session = require('./models/Session');
 const authRoutes = require('./routes/auth'); 
 

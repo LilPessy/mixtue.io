@@ -5,7 +5,7 @@ const { Server } = require('socket.io');
 const path = require('path');
 const app = express();
 
-// MODIFICA: Render assegnerà una porta in automatico, altrimenti usa la 3000 in locale
+// Render assegnerà una porta in automatico, altrimenti usa la 3000 in locale
 const PORT = process.env.PORT || 3000; 
 
 const bcrypt = require('bcryptjs');
@@ -21,9 +21,11 @@ const authRoutes = require('./routes/auth');
 // Permette a React di fare richieste a Express
 const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+// 1. FIX CORS PER EXPRESS
 app.use(cors({
     origin: frontendURL, 
-    credentials: true 
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 
 app.use(express.json()); 
@@ -44,11 +46,12 @@ mongoose.connect(process.env.MONGO_URI)
 // Creazione del server HTTP unificato
 const server = http.createServer(app);
 
-// Inizializzazione di Socket.io
+// 2. FIX CORS PER SOCKET.IO
 const io = new Server(server, {
     cors: {
         origin: frontendURL,
-        methods: ["GET", "POST"]
+        credentials: true, // FONDAMENTALE PER NON FAR BLOCCARE I SOCKET
+        methods: ["GET", "POST", "PUT", "DELETE"]
     }
 });
 
@@ -97,7 +100,7 @@ app.post('/api/upload/propic', uploadPropic.single('image'), (req, res) => {
     }
     res.status(200).json({ 
         message: "Foto profilo aggiornata", 
-        // MODIFICA: Cloudinary restituisce il path (URL sicuro), non il filename!
+        // Cloudinary restituisce il path (URL sicuro), non il filename!
         fileName: req.file.path 
     });
 });
@@ -119,7 +122,7 @@ app.post('/api/upload/track', uploadTrack.single('audioFile'), async (req, res) 
             return res.status(404).json({ error: "Sessione non trovata" });
         }
 
-        // MODIFICA: Ora peschiamo l'URL direttamente da Cloudinary!
+        // Ora peschiamo l'URL direttamente da Cloudinary!
         const urlTraccia = req.file.path;
         const nomeTraccia = req.file.originalname;
 

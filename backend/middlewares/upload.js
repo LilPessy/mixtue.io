@@ -1,29 +1,42 @@
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 
-// 1. Storage per le Foto Profilo
-const propicStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'public/propic/'); 
-  },
-  filename: function (req, file, cb) {
-    // Sostituiamo anche gli spazi nel nome del file con degli underscore per evitare bug negli URL
-    const safeName = file.originalname.replace(/\s+/g, '_');
-    cb(null, Date.now() + '-propic-' + safeName);
-  }
+// Configurazione Cloudinary (prende i dati dal tuo file .env)
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// 2. Storage per le Tracce Audio del Mixer
-const trackStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'public/tracks/'); // IMPORTANTE: create questa cartella fisicamente nel progetto!
-  },
-  filename: function (req, file, cb) {
-    const safeName = file.originalname.replace(/\s+/g, '_');
-    cb(null, Date.now() + '-track-' + safeName);
-  }
+// 1. Storage per le Foto Profilo su Cloudinary
+const propicStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'mixtue_propics',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp'], // Formati immagine consentiti
+        public_id: (req, file) => {
+            // Rimuoviamo l'estensione originale e gli spazi per il nome su Cloudinary
+            const safeName = file.originalname.replace(/\s+/g, '_').split('.')[0];
+            return Date.now() + '-propic-' + safeName;
+        }
+    },
 });
 
-// Creiamo i due "caselli" multer
+// 2. Storage per le Tracce Audio su Cloudinary
+const trackStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'mixtue_tracks',
+        resource_type: 'video', // FONDAMENTALE: Cloudinary tratta i file audio (.mp3, .wav) come 'video'
+        public_id: (req, file) => {
+            const safeName = file.originalname.replace(/\s+/g, '_').split('.')[0];
+            return Date.now() + '-track-' + safeName;
+        }
+    },
+});
+
+// Creiamo i due "caselli" multer con la nuova destinazione Cloudinary
 const uploadPropic = multer({ storage: propicStorage });
 const uploadTrack = multer({ storage: trackStorage });
 

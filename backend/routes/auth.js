@@ -19,6 +19,39 @@ const verifyToken = (req, res, next) => {
   });
 };
 
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Registra un nuovo utente
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               nome:
+ *                 type: string
+ *               cognome:
+ *                 type: string
+ *               propic:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Utente creato con successo
+ *       400:
+ *         description: Email o username già in uso, o dati non validi
+ *       500:
+ *         description: Errore del server
+ */
 router.post('/register', uploadPropic.single('propic'), async (req, res) => {
   try {
     const { email, password, username, nome, cognome } = req.body;
@@ -72,6 +105,30 @@ router.post('/register', uploadPropic.single('propic'), async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Effettua il login
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login effettuato con successo
+ *       400:
+ *         description: Utente non trovato o password errata
+ *       500:
+ *         description: Errore durante il login
+ */
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -103,6 +160,21 @@ router.post('/login', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   get:
+ *     summary: Aggiorna l'access token usando il refresh token nei cookie
+ *     responses:
+ *       200:
+ *         description: Nuovo access token generato
+ *       401:
+ *         description: Non autorizzato (cookie mancante)
+ *       403:
+ *         description: Accesso negato (token non valido o scaduto)
+ *       500:
+ *         description: Errore durante il refresh del token
+ */
 router.get('/refresh', async (req, res) => {
   try {
     const cookies = req.cookies;
@@ -125,6 +197,25 @@ router.get('/refresh', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Recupera i dati dell'utente loggato
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dati utente recuperati con successo
+ *       401:
+ *         description: Access Token mancante
+ *       403:
+ *         description: Token non valido o scaduto
+ *       404:
+ *         description: Utente non trovato
+ *       500:
+ *         description: Errore interno del server
+ */
 router.get('/me', verifyToken, async (req, res) => {
   try {
         const utenteTrovato = await User.findById(req.userId).populate({

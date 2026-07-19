@@ -17,6 +17,7 @@ require('dotenv').config();
 const User = require('./models/user'); 
 const Session = require('./models/Session');
 const authRoutes = require('./routes/auth'); 
+const swaggerDocs = require('./swagger');
 
 // Permette a React di fare richieste a Express
 const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -33,6 +34,8 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 
 app.use('/public', express.static(path.join(__dirname, 'public')));
+
+swaggerDocs(app);
 
 // Connessione Db
 mongoose.connect(process.env.MONGO_URI)
@@ -66,10 +69,39 @@ const ottieniImmagine = (utente) => {
 
 // --- ROTTE EXPRESS (API REST) ---
 
+/**
+ * @swagger
+ * /api/test:
+ *   get:
+ *     summary: Verifica che il backend sia attivo
+ *     responses:
+ *       200:
+ *         description: Messaggio di successo
+ */
 app.get('/api/test', (req, res) => {
     res.json({ message: "Il backend di Mixtue.io è vivo e vegeto!" });
 });
 
+/**
+ * @swagger
+ * /api/session/{id}:
+ *   get:
+ *     summary: Recupera i dati di una sessione specifica
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID della sessione
+ *     responses:
+ *       200:
+ *         description: Dati della sessione recuperati con successo
+ *       404:
+ *         description: Sessione non trovata
+ *       500:
+ *         description: Errore del server
+ */
 app.get('/api/session/:id', async (req, res) => {
     try {
         const sessionId = req.params.id;
@@ -94,6 +126,27 @@ app.get('/api/session/:id', async (req, res) => {
 const { uploadPropic, uploadTrack } = require('./middlewares/upload');
 
 // 2. ROTTA PER LA FOTO PROFILO
+/**
+ * @swagger
+ * /api/upload/propic:
+ *   post:
+ *     summary: Carica l'immagine del profilo utente
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Foto profilo aggiornata
+ *       400:
+ *         description: Nessuna immagine caricata
+ */
 app.post('/api/upload/propic', uploadPropic.single('image'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: "Nessuna immagine caricata" });
@@ -106,6 +159,34 @@ app.post('/api/upload/propic', uploadPropic.single('image'), (req, res) => {
 });
 
 // 3. ROTTA PER LE TRACCE AUDIO
+/**
+ * @swagger
+ * /api/upload/track:
+ *   post:
+ *     summary: Carica una traccia audio nella sessione
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               audioFile:
+ *                 type: string
+ *                 format: binary
+ *               sessionId:
+ *                 type: string
+ *                 description: ID della sessione
+ *     responses:
+ *       200:
+ *         description: Traccia aggiunta con successo
+ *       400:
+ *         description: Nessuna traccia o ID sessione mancante
+ *       404:
+ *         description: Sessione non trovata
+ *       500:
+ *         description: Errore del server
+ */
 app.post('/api/upload/track', uploadTrack.single('audioFile'), async (req, res) => {
     try {
         if (!req.file) {
@@ -147,6 +228,49 @@ app.post('/api/upload/track', uploadTrack.single('audioFile'), async (req, res) 
 });
 
 // ROTTA PER AGGIORNARE LO STATO DI UNA TRACCIA (Volume, EQ, Mute)
+/**
+ * @swagger
+ * /api/session/{sessionId}/state/bulk:
+ *   put:
+ *     summary: Aggiorna lo stato di più tracce in bulk
+ *     parameters:
+ *       - in: path
+ *         name: sessionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               type: object
+ *               properties:
+ *                 trackId:
+ *                   type: string
+ *                 volume:
+ *                   type: number
+ *                 isMuted:
+ *                   type: boolean
+ *                 eq:
+ *                   type: object
+ *                   properties:
+ *                     high:
+ *                       type: number
+ *                     mid:
+ *                       type: number
+ *                     low:
+ *                       type: number
+ *     responses:
+ *       200:
+ *         description: Mixer salvato con successo
+ *       404:
+ *         description: Sessione non trovata
+ *       500:
+ *         description: Errore del server
+ */
 app.put('/api/session/:sessionId/state/bulk', async (req, res) => {
     try {
         const { sessionId } = req.params;
@@ -178,6 +302,32 @@ app.put('/api/session/:sessionId/state/bulk', async (req, res) => {
 });
 
 // ROTTA PER CREARE UNA NUOVA SESSIONE DINAMICA
+/**
+ * @swagger
+ * /api/sessions/crea:
+ *   post:
+ *     summary: Crea una nuova sessione musicale
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               projectName:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Sessione creata con successo
+ *       400:
+ *         description: Dati mancanti
+ *       404:
+ *         description: Utente non trovato
+ *       500:
+ *         description: Errore del server
+ */
 app.post('/api/sessions/crea', async (req, res) => {
     try {
         const nomeUtente = req.body.username; 
@@ -213,6 +363,32 @@ app.post('/api/sessions/crea', async (req, res) => {
 });
 
 // ROTTA PER UNIRSI A UNA SESSIONE ESISTENTE 
+/**
+ * @swagger
+ * /api/sessions/unisciti:
+ *   post:
+ *     summary: Unisciti a una sessione esistente
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               roomCode:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Unione avvenuta con successo
+ *       400:
+ *         description: Già proprietario o collaboratore, o dati mancanti
+ *       404:
+ *         description: Utente o stanza non trovati
+ *       500:
+ *         description: Errore del server
+ */
 app.post('/api/sessions/unisciti', async (req, res) => {
     try {
         const codiceStanza = req.body.roomCode;
@@ -262,6 +438,37 @@ app.post('/api/sessions/unisciti', async (req, res) => {
 });
 
 // ROTTA PER ELIMINARE O ABBANDONARE UN PROGETTO
+/**
+ * @swagger
+ * /api/sessions/elimina/{id}:
+ *   delete:
+ *     summary: Elimina o abbandona una sessione
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID della sessione
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Progetto rimosso con successo
+ *       400:
+ *         description: Username mancante
+ *       404:
+ *         description: Utente o stanza non trovati
+ *       500:
+ *         description: Errore del server
+ */
 app.delete('/api/sessions/elimina/:id', async (req, res) => {
     try {
         const sessionId = req.params.id;

@@ -4,7 +4,9 @@ const http = require('http'); // Modulo nativo di Node
 const { Server } = require('socket.io');
 const path = require('path');
 const app = express();
-const PORT = 3000;
+
+// MODIFICA: Render assegnerà una porta in automatico, altrimenti usa la 3000 in locale
+const PORT = process.env.PORT || 3000; 
 
 const bcrypt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
@@ -14,24 +16,20 @@ require('dotenv').config();
 
 const User = require('./models/User'); 
 const Session = require('./models/Session');
-const authRoutes = require('./routes/auth'); // importiamo il file delle rotte 
+const authRoutes = require('./routes/auth'); 
 
-// Middleware fondamentali
-// Permette a React (porta 5173) di fare richieste a Express (porta 3000)
-const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173/';
+// Permette a React di fare richieste a Express
+const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 app.use(cors({
     origin: frontendURL, 
     credentials: true 
 }));
 
-
-app.use(express.json()); // Permette di leggere i dati in formato JSON dal frontend
-app.use(cookieParser()); // Permette di leggere e tradurre i cookie che il browser invia al server
+app.use(express.json()); 
+app.use(cookieParser()); 
 app.use('/api/auth', authRoutes);
 
-// Questo dice a Express: "Tutto quello che c'è nella cartella 'public', 
-// rendilo accessibile dal browser sotto l'indirizzo /public"
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Connessione Db
@@ -43,7 +41,7 @@ mongoose.connect(process.env.MONGO_URI)
         console.error('❌ Errore di connessione a MongoDB:', err);
     });
 
-// Creazione del server HTTP unificato (serve per far convivere Express e Socket.io)
+// Creazione del server HTTP unificato
 const server = http.createServer(app);
 
 // Inizializzazione di Socket.io
@@ -56,12 +54,10 @@ const io = new Server(server, {
 
 // --- FUNZIONI DI SUPPORTO ---
 
-// La funzione per l'immagine di default
 const ottieniImmagine = (utente) => {
     if (utente && utente.propic) {
         return utente.propic;
     }
-    // Percorso corretto per la cartella statica
     return '/public/propic/default.jpg'; 
 };
 
@@ -71,20 +67,15 @@ app.get('/api/test', (req, res) => {
     res.json({ message: "Il backend di Mixtue.io è vivo e vegeto!" });
 });
 
-
-// GUARDA QUI: ho aggiunto "async" prima di (req, res)
 app.get('/api/session/:id', async (req, res) => {
     try {
-        // Estraiamo l'id specifico
         const sessionId = req.params.id;
-        
         const sessione = await Session.findById(sessionId);
         
         if (!sessione) {
             return res.status(404).json({ message: "Sessione non trovata" });
         }
 
-        // Usiamo roomeCode come scritto nel tuo schema!
         res.json({ 
             roomCode: sessione.roomeCode,
             name: sessione.name,
@@ -97,7 +88,6 @@ app.get('/api/session/:id', async (req, res) => {
     }
 });
 
-// 1. Importiamo ENTRAMBI i middleware estraendoli dall'oggetto
 const { uploadPropic, uploadTrack } = require('./middlewares/upload');
 
 // 2. ROTTA PER LA FOTO PROFILO
@@ -107,55 +97,43 @@ app.post('/api/upload/propic', uploadPropic.single('image'), (req, res) => {
     }
     res.status(200).json({ 
         message: "Foto profilo aggiornata", 
-        fileName: req.file.filename 
+        // MODIFICA: Cloudinary restituisce il path (URL sicuro), non il filename!
+        fileName: req.file.path 
     });
 });
 
 // 3. ROTTA PER LE TRACCE AUDIO
 app.post('/api/upload/track', uploadTrack.single('audioFile'), async (req, res) => {
     try {
-        // 1. Controlliamo che il file sia arrivato
         if (!req.file) {
             return res.status(400).json({ error: "Nessuna traccia caricata" });
         }
 
-        // 2. Leggiamo l'ID della sessione che React ci ha mandato nel formData
         const { sessionId } = req.body;
-
         if (!sessionId) {
             return res.status(400).json({ error: "ID della sessione mancante" });
         }
 
-        // 3. Cerchiamo la sessione nel database
         const sessione = await Session.findById(sessionId);
-
         if (!sessione) {
             return res.status(404).json({ error: "Sessione non trovata" });
         }
 
-        // 4. Creiamo il percorso e il nome che salveremo nel DB
-        const urlTraccia = `/public/tracks/${req.file.filename}`;
-        
-        // Usiamo il nome originale del file caricato (es. "basso.mp3") o quello generato
-        const nomeTraccia = req.file.originalname || req.file.filename;
+        // MODIFICA: Ora peschiamo l'URL direttamente da Cloudinary!
+        const urlTraccia = req.file.path;
+        const nomeTraccia = req.file.originalname;
 
-        // 5. Creiamo l'oggetto traccia seguendo il tuo Schema Mongoose
         const nuovaTraccia = {
             name: nomeTraccia,
             fileUrl: urlTraccia,
         };
 
-        // 6. Infiliamo la traccia nell'array della sessione
         sessione.tracks.push(nuovaTraccia);
-
-        // 7. Salviamo la sessione aggiornata nel DB
         await sessione.save();
 
-        // 8. Rispondiamo a React con successo, inviando i dati della traccia appena salvata
         res.status(200).json({ 
             message: "Traccia aggiunta con successo alla sessione", 
-            fileName: req.file.filename,
-            // Restituiamo la traccia così com'è stata salvata nel DB (con il suo _id generato da Mongoose)
+            fileName: req.file.path, // Rimandiamo indietro l'URL sicuro
             track: sessione.tracks[sessione.tracks.length - 1] 
         });
 
@@ -166,24 +144,19 @@ app.post('/api/upload/track', uploadTrack.single('audioFile'), async (req, res) 
 });
 
 // ROTTA PER AGGIORNARE LO STATO DI UNA TRACCIA (Volume, EQ, Mute)
-// ROTTA PER SALVARE LO STATO DELL'INTERO MIXER
 app.put('/api/session/:sessionId/state/bulk', async (req, res) => {
     try {
         const { sessionId } = req.params;
-        const tracksState = req.body; // Questo ora è un array di oggetti!
+        const tracksState = req.body; 
 
         const sessione = await Session.findById(sessionId);
         if (!sessione) {
             return res.status(404).json({ error: "Sessione non trovata" });
         }
 
-        // Cicliamo l'array che ci arriva dal frontend
         tracksState.forEach(trackData => {
-            // Cerchiamo la traccia corrispondente nel database
             const tracciaDB = sessione.tracks.id(trackData.trackId);
-            
             if (tracciaDB) {
-                // Aggiorniamo i valori
                 tracciaDB.state.volume = trackData.volume;
                 tracciaDB.state.isMuted = trackData.isMuted;
                 tracciaDB.state.eq.high = trackData.eq.high;
@@ -192,9 +165,7 @@ app.put('/api/session/:sessionId/state/bulk', async (req, res) => {
             }
         });
 
-        // Salviamo la sessione con tutte le tracce aggiornate in un colpo solo
         await sessione.save();
-
         res.status(200).json({ message: "Mixer salvato con successo!" });
 
     } catch (error) {
@@ -214,7 +185,6 @@ app.post('/api/sessions/crea', async (req, res) => {
         }
 
         const utente = await User.findOne({ username: nomeUtente });
-        
         if (!utente) {
             return res.status(404).json({ error: 'Utente non trovato nel database' });
         }
@@ -239,7 +209,7 @@ app.post('/api/sessions/crea', async (req, res) => {
     }
 });
 
-// ROTTA PER UNIRSI A UNA SESSIONE ESISTENTE (COLLABORA) - VERSIONE SICURA
+// ROTTA PER UNIRSI A UNA SESSIONE ESISTENTE 
 app.post('/api/sessions/unisciti', async (req, res) => {
     try {
         const codiceStanza = req.body.roomCode;
@@ -298,13 +268,9 @@ app.delete('/api/sessions/elimina/:id', async (req, res) => {
             return res.status(400).json({ error: 'Username mancante' });
         }
 
-        // 1. Cerchiamo l'utente
         const utente = await User.findOne({ username: nomeUtente });
-        
-        // 2. CERCHIAMO LA SESSIONE (Questa riga mancava!)
         const sessione = await Session.findById(sessionId);
 
-        // 3. Ora possiamo fare il controllo in sicurezza
         if (!utente || !sessione) {
             return res.status(404).json({ error: 'Utente o stanza non trovati' });
         }
@@ -312,20 +278,15 @@ app.delete('/api/sessions/elimina/:id', async (req, res) => {
         const isOwner = sessione.ownerId.toString() === utente._id.toString();
 
         if (isOwner) {
-            // Se è il proprietario, distruggiamo la stanza
             await Session.findByIdAndDelete(sessionId);
-            
-            // E la togliamo dalle sessioni attive di TUTTI gli utenti
             await User.updateMany(
                 { activeSessions: sessionId },
                 { $pull: { activeSessions: sessionId } }
             );
         } else {
-            // Se è un collaboratore, lo togliamo dalla stanza
             sessione.collaborators = sessione.collaborators.filter(id => id.toString() !== utente._id.toString());
             await sessione.save();
 
-            // E togliamo la stanza dal SUO profilo
             utente.activeSessions = utente.activeSessions.filter(id => id.toString() !== sessionId.toString());
             await utente.save();
         }
@@ -343,18 +304,12 @@ app.delete('/api/sessions/elimina/:id', async (req, res) => {
 io.on('connection', (socket) => {
     console.log(`🔌 Un utente si è connesso: ${socket.id}`);
 
-    // 1. Quando un utente apre un progetto, lo facciamo entrare nella sua "Room"
     socket.on('join-room', (sessionId) => {
         socket.join(sessionId);
         console.log(`Utente ${socket.id} è entrato nella stanza ${sessionId}`);
     });
 
-    // 2. Quando qualcuno muove un fader o un knob
     socket.on('send-mixer-update', (data) => {
-        // data conterrà roba tipo: { sessionId, trackId, parametro, valore }
-        
-        // socket.to(stanza).emit manda il pacchetto a TUTTI quelli nella stanza 
-        // TRANNE a chi ha appena mosso il fader (altrimenti il suo fader scatterebbe)
         socket.to(data.sessionId).emit('receive-mixer-update', data);
     });
 
